@@ -1,0 +1,46 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Users\SIRCLO\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js install
+
+PATH: 
+  C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Program Files\dotnet\;D:\xampp\php;C:\composer;C:\Program Files\Java\jdk-11.0.13\bin;C:\Users\SIRCLO\AppData\Local\Microsoft\WindowsApps;C:\Users\SIRCLO\AppData\Local\Programs\Microsoft VS Code\bin;D:\flutter\flutter_windows_2.10.3-stable\flutter\bin;C:\Users\SIRCLO\AppData\Roaming\npm;D:\Java;C:\Users\SIRCLO\AppData\Roaming\Composer\vendor\bin;C:\Users\SIRCLO\AppData\Local\Android\Sdk\platform-tools;D:\heroku\bin;C:\Users\SIRCLO\Downloads\openssl-0.9.8k_X64\bin;C:\Users\SIRCLO\Downloads\mongodb-database-tools-windows-x86_64-100.6.0\bin;C:\Users\SIRCLO\.fly\bin
+
+Yarn version: 
+  1.22.18
+
+Node version: 
+  16.14.2
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: read ECONNRESET
+      at TLSWrap.onStreamRead (node:internal/stream_base_commons:217:20)
+
+npm manifest: 
+  {
+    "name": "be-pokechain",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "start": "nodemon index.js",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "@prisma/client": "^4.4.0",
+      "cors": "^2.8.5",
+      "express": "^4.18.1",
+      "nodemon": "^2.0.20",
+      "prisma": "^4.4.0"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
