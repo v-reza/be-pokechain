@@ -4,21 +4,27 @@ const prisma = new PrismaClient();
 const {
   user: User,
   profile: Profile,
+  items: Items,
   mypokemon: MyPokemon,
-  arena: Arena,
+  mydetailpokemon: MyDetailPokemon,
   pokemon: Pokemon,
+  pokemonevolutionto: PokemonEvolutionTo,
+  pokemonelement: PokemonElement,
+  arena: Arena,
   marketpokemon: MarketPokemon,
-  cart: Cart,
   transaction: Transaction,
 } = prisma;
 
 module.exports = {
   User,
   Profile,
+  Items,
   MyPokemon,
-  Arena,
+  MyDetailPokemon,
   Pokemon,
+  PokemonEvolutionTo,
+  PokemonElement,
+  Arena,
   MarketPokemon,
-  Cart,
   Transaction,
 };
