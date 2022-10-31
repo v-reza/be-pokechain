@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,14 +10,14 @@ datasource db {
 model User {
   id       String   @id @default(uuid())
   email    String   @unique
-  username String
+  username String   @unique
   password String
+  refresh_token String? @db.LongText
   profile  Profile?
 }
 
 model Profile {
   id            String          @id @default(uuid())
-  user          User            @relation(fields: [userId], references: [id])
   userId        String          @unique
   fullName      String?
   picture       String?
@@ -29,30 +26,21 @@ model Profile {
   point         Int             @default(0)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  MyPokemon     MyPokemon[]
+  user          User            @relation(fields: [userId], references: [id])
+  Items         Items[]
   MarketPokemon MarketPokemon[]
+  MyPokemon     MyPokemon?
   Transaction   Transaction[]
-  MyItems       MyItems[]
-}
-
-model MyItems {
-  id        String   @id @default(uuid())
-  profile   Profile  @relation(fields: [profileId], references: [id])
-  profileId String
-  name      String
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model MyPokemon {
   id        String           @id @default(uuid())
-  user      Profile          @relation(fields: [userId], references: [id])
   userId    String           @unique
-  detail    MyDetailPokemon?
-  isSell    Boolean          @default(false)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
+  isSell    Boolean          @default(false)
+  user      Profile          @relation(fields: [userId], references: [id])
+  detail    MyDetailPokemon?
 }
 
 model MyDetailPokemon {
@@ -62,43 +50,45 @@ model MyDetailPokemon {
   attack      Int
   defense     Int
   level       Int?
+  myPokemonId String    @unique
   element     String
   MyPokemon   MyPokemon @relation(fields: [myPokemonId], references: [id])
-  myPokemonId String    @unique
 }
 
 model Pokemon {
   id                 Int                  @id @default(autoincrement())
   name               String
-  health             Int
-  attack             Int
-  defense            Int
-  element            String
-  frontDefault       String
-  frontDefaultGIF    String
-  backDefaultGIF     String
-  pokemonEvolutionTo PokemonEvolutionTo[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
+  attack             Int
+  defense            Int
+  health             Int
+  element            String
+  backDefaultGIF     String
+  frontDefault       String
+  frontDefaultGIF    String
+  pokemonEvolutionTo PokemonEvolutionTo[]
 }
 
 model PokemonEvolutionTo {
   id              Int      @id @default(autoincrement())
-  Pokemon         Pokemon  @relation(fields: [PokemonId], references: [id])
   PokemonId       Int
   pokemonName     String
   health          Int
   attack          Int
   defense         Int
   level           Int      @default(1)
-  element         String
-  frontDefault    String
-  frontDefaultGIF String
-  backDefaultGIF  String
-  requiredItem    String?
-  qtyRequiredItem Int?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  element         String
+  backDefaultGIF  String
+  frontDefault    String
+  frontDefaultGIF String
+  qtyRequiredItem Int?
+  requiredItem    String?
+  Pokemon         Pokemon  @relation(fields: [PokemonId], references: [id])
+
+  @@index([PokemonId], map: "PokemonEvolutionTo_PokemonId_fkey")
 }
 
 model Arena {
@@ -112,17 +102,33 @@ model Arena {
 model MarketPokemon {
   id        String   @id @default(uuid())
   price     Int
-  seller    Profile  @relation(fields: [sellerId], references: [id])
   sellerId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  seller    Profile  @relation(fields: [sellerId], references: [id])
+
+  @@index([sellerId], map: "MarketPokemon_sellerId_fkey")
 }
 
 model Transaction {
   id         String  @id @default(uuid())
-  user       Profile @relation(fields: [userId], references: [id])
   userId     String
   status     String
   totalPrice Int
   orderId    String
+  user       Profile @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Transaction_userId_fkey")
+}
+
+model Items {
+  id        String   @id
+  profileId String
+  name      String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Profile   Profile  @relation(fields: [profileId], references: [id])
+
+  @@index([profileId], map: "Items_profileId_fkey")
 }
