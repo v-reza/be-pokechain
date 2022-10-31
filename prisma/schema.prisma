@@ -8,12 +8,12 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  email    String   @unique
-  username String   @unique
-  password String
-  refresh_token String? @db.LongText
-  profile  Profile?
+  id            String   @id @default(uuid())
+  email         String   @unique
+  username      String   @unique
+  password      String
+  refresh_token String?  @db.LongText
+  profile       Profile?
 }
 
 model Profile {
@@ -27,9 +27,9 @@ model Profile {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   user          User            @relation(fields: [userId], references: [id])
-  Items         Items[]
+  MyItems       MyItems[]
   MarketPokemon MarketPokemon[]
-  MyPokemon     MyPokemon?
+  MyPokemon     MyPokemon[]
   Transaction   Transaction[]
 }
 
@@ -121,7 +121,7 @@ model Transaction {
   @@index([userId], map: "Transaction_userId_fkey")
 }
 
-model Items {
+model MyItems {
   id        String   @id
   profileId String
   name      String

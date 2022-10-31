@@ -25,21 +25,20 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
+    const { userOrEmail, password } = req.body;
     const user = await User.findFirst({
       where: {
-        OR: [
-          { email: req.body.userOrEmail },
-          { username: req.body.userOrEmail },
-        ],
+        OR: [{ email: userOrEmail }, { username: userOrEmail }],
       },
     });
+    if (!user) return res.status(400).json({ msg: "User not found" });
 
-    const match = await bcrypt.compare(req.body.password, user.password);
+    const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ msg: "Wrong Password" });
 
-    const { userId, userName, userEmail } = user;
+    const { id: userId, username, email } = user;
     const accessToken = jwt.sign(
-      { userId, userEmail, userName },
+      { userId, email, username },
       process.env.ACCESS_TOKEN_SECRET,
       {
         expiresIn: "20s",
@@ -47,7 +46,7 @@ const login = async (req, res) => {
     );
 
     const refreshToken = jwt.sign(
-      { userId, userEmail, userName },
+      { userId, email, username },
       process.env.REFRESH_TOKEN_SECRET,
       {
         expiresIn: "1d",
@@ -74,7 +73,7 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
+  const { refreshToken } = req.cookies;
   if (!refreshToken) return res.sendStatus(401);
 
   try {
@@ -86,17 +85,16 @@ const logout = async (req, res) => {
 
     if (!user) return res.sendStatus(204);
 
-    const userId = user.id;
     await User.update({
       where: {
-        id: userId,
+        id: user.id,
       },
       data: {
         refresh_token: null,
       },
     });
     res.clearCookie("refreshToken");
-    return res.status(200).json({msg: "Logout Successful",});
+    return res.status(200).json({ msg: "Logout Successful" });
   } catch (e) {
     res.status(500).json({ msg: e.message });
   }
@@ -104,7 +102,7 @@ const logout = async (req, res) => {
 
 const refreshToken = async (req, res) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const { refreshToken } = req.cookies;
     if (!refreshToken) return res.sendStatus(401);
 
     const user = await User.findFirst({
@@ -118,9 +116,9 @@ const refreshToken = async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
       (err, decoded) => {
         if (err) return res.sendStatus(403);
-        const { userId, userName, userEmail } = user;
+        const { id: userId, username, email } = user;
         const accessToken = jwt.sign(
-          { userId, userName, userEmail },
+          { userId, username, email },
           process.env.ACCESS_TOKEN_SECRET,
           {
             expiresIn: "15s",

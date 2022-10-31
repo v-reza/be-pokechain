@@ -6,10 +6,11 @@ const path = require("path");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const indexRouter = require("./routes/index");
+const { allowedOrigins } = require("./config/rootConfig");
 
 /* Application Use */
 dotenv.config();
-app.use(cors({ credentials: true }));
+app.use(cors({ credentials: true, origin: allowedOrigins }));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
