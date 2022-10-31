@@ -12,6 +12,7 @@ const pokemonsGetController = async (req, res) => {
         }
       });
     });
+    //
 
     return res.status(200).json(duplicate);
   } catch (error) {
