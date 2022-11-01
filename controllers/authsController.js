@@ -8,6 +8,13 @@ const register = async (req, res) => {
     return res.status(400).json({ msg: "Password and confirm don't match" });
 
   try {
+    const haveUser = await User.findFirst({
+      where: {
+        OR: [{ email: email }, { username: username }],
+      }
+    })
+    if (haveUser) return res.status(400).json({ msg: "User already exists" });
+
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(password, salt);
     const users = await User.create({
@@ -15,7 +22,15 @@ const register = async (req, res) => {
         username: username,
         email: email,
         password: hashPassword,
+        profile: {
+          create: {
+            balance: 0
+          }
+        }
       },
+      include: {
+        profile: true
+      }
     });
     res.status(200).json({ msg: "Register Successful", user: users });
   } catch (e) {
@@ -30,15 +45,18 @@ const login = async (req, res) => {
       where: {
         OR: [{ email: userOrEmail }, { username: userOrEmail }],
       },
+      include: {
+        profile: true
+      }
     });
     if (!user) return res.status(400).json({ msg: "User not found" });
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ msg: "Wrong Password" });
 
-    const { id: userId, username, email } = user;
+    const { id: userId, username, email, profile } = user;
     const accessToken = jwt.sign(
-      { userId, email, username },
+      { userId, email, username, profile },
       process.env.ACCESS_TOKEN_SECRET,
       {
         expiresIn: "20s",
@@ -46,7 +64,7 @@ const login = async (req, res) => {
     );
 
     const refreshToken = jwt.sign(
-      { userId, email, username },
+      { userId, email, username, profile },
       process.env.REFRESH_TOKEN_SECRET,
       {
         expiresIn: "1d",
@@ -109,6 +127,9 @@ const refreshToken = async (req, res) => {
       where: {
         refresh_token: refreshToken,
       },
+      include: {
+        profile: true
+      }
     });
     if (!user) return res.sendStatus(403);
     jwt.verify(
@@ -116,9 +137,9 @@ const refreshToken = async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
       (err, decoded) => {
         if (err) return res.sendStatus(403);
-        const { id: userId, username, email } = user;
+        const { id: userId, username, email, profile } = user;
         const accessToken = jwt.sign(
-          { userId, username, email },
+          { userId, username, email, profile },
           process.env.ACCESS_TOKEN_SECRET,
           {
             expiresIn: "15s",
