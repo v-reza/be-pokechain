@@ -1,12 +1,12 @@
 /* Import Module */
 const express = require("express");
 const app = express();
-const authsRouter = require("./subroutes/auths");
-const usersRouter = require("./subroutes/users");
-const pokemonsRouter = require("./subroutes/pokemons");
+const authRouter = require("./subroutes/auth");
+const userRouter = require("./subroutes/user");
+const pokemonRouter = require("./subroutes/pokemon");
 
-app.use("/auths", authsRouter);
-app.use("/users", usersRouter);
-app.use("/pokemons", pokemonsRouter);
+app.use("/auth", authRouter);
+app.use("/user", userRouter);
+app.use("/pokemon", pokemonRouter);
 
 module.exports = app;

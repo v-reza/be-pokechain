@@ -4,7 +4,7 @@ const {
   login,
   logout,
   refreshToken,
-} = require("../../controllers/authsController");
+} = require("../../controllers/AuthController");
 
 router.post("/register", register);
 router.post("/login", login);
