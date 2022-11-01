@@ -1,6 +1,6 @@
 const {
   pokemonsGetController,
-} = require("../../controllers/pokemonsController");
+} = require("../../controllers/PokemonController");
 
 const router = require("express").Router();
 
