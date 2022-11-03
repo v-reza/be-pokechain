@@ -1,6 +1,8 @@
 const { User } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv")
+dotenv.config()
 
 const register = async (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
@@ -32,6 +34,7 @@ const register = async (req, res) => {
         profile: true
       }
     });
+    delete users.password
     res.status(200).json({ msg: "Register Successful", user: users });
   } catch (e) {
     res.status(500).json({ msg: e.message });
