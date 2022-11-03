@@ -17,22 +17,23 @@ model User {
 }
 
 model Profile {
-  id             String          @id @default(uuid())
-  idUser         Int             @unique @default(autoincrement())
-  full_name      String?
-  picture        String?
-  balance        Int?
-  tier           Int             @default(1)
-  point          Int             @default(0)
-  created_at     DateTime        @default(now())
-  updated_at     DateTime        @updatedAt
-  user_id        String          @unique
-  user           User            @relation(fields: [user_id], references: [id])
-  market_items   MarketItems[]
+  id              String           @id @default(uuid())
+  increment_id    Int?             @unique(map: "Profile_increment_id_key") @default(autoincrement())
+  full_name       String?
+  picture         String?
+  balance         Int?
+  tier            Int              @default(1)
+  point           Int              @default(0)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  user_id         String           @unique
+  user            User             @relation(fields: [user_id], references: [id])
+  market_items    MarketItems[]
   market_pokemons MarketPokemon[]
-  my_items       MyItems[]
-  my_pokemons    MyPokemon[]
+  my_items        MyItems[]
+  my_pokemons     MyPokemon[]
   transactions    Transaction[]
+  MarketTopSales  MarketTopSales[]
 }
 
 model MyPokemon {
@@ -63,18 +64,18 @@ model MyDetailPokemon {
 }
 
 model Pokemon {
-  id                Int                @id @default(autoincrement())
-  name              String
-  created_at        DateTime?          @default(now())
-  updated_at        DateTime?          @updatedAt
-  attack            Int
-  defense           Int
-  health            Int
-  element           String
-  back_default_gif  String
-  front_default     String
-  front_default_gif String
-  level             Int                @default(1)
+  id                 Int                @id @default(autoincrement())
+  name               String
+  created_at         DateTime?          @default(now())
+  updated_at         DateTime?          @updatedAt
+  attack             Int
+  defense            Int
+  health             Int
+  element            String
+  back_default_gif   String
+  front_default      String
+  front_default_gif  String
+  level              Int                @default(1)
   pokemon_evolutions PokemonEvolution[]
 }
 
@@ -105,6 +106,63 @@ model Arena {
   point      Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+model MarketTopSales {
+  id                String                  @id @default(uuid())
+  type              String // all, pokemon, items, bundles, token
+  top_sales_pokemon MarketTopSalesPokemon[]
+  top_sales_items   MarketTopSalesItems[]
+  top_sales_bundles MarketTopSalesBundles[]
+  top_sales_token   MarketTopSalesToken[]
+  seller_id         String
+  created_at        DateTime                @default(now())
+  updated_at        DateTime                @updatedAt
+  seller            Profile                 @relation(fields: [seller_id], references: [id])
+
+  @@index([seller_id], map: "MarketTopSales_seller_id_fkey")
+}
+
+model MarketTopSalesPokemon {
+  MarketTopSales    MarketTopSales? @relation(fields: [marketTopSalesId], references: [id])
+  marketTopSalesId  String          @unique
+  price             Int
+  name              String
+  attack            String
+  defense           String
+  level             Int
+  element           String
+  front_default     String
+  front_default_gif String
+  back_default_gif  String
+}
+
+model MarketTopSalesItems {
+  MarketTopSales   MarketTopSales? @relation(fields: [marketTopSalesId], references: [id])
+  marketTopSalesId String          @unique
+  price            Int
+  name             String
+  rarity           String
+}
+
+model MarketTopSalesBundles {
+  MarketTopSales   MarketTopSales?              @relation(fields: [marketTopSalesId], references: [id])
+  marketTopSalesId String                       @unique
+  price            Int
+  bundles_items    MarketTopSalesBundlesItems[]
+}
+
+model MarketTopSalesBundlesItems {
+  MarketTopSalesBundles                 MarketTopSalesBundles? @relation(fields: [marketTopSalesBundlesMarketTopSalesId], references: [marketTopSalesId])
+  marketTopSalesBundlesMarketTopSalesId String                 @unique
+  item_name                             String
+}
+
+model MarketTopSalesToken {
+  MarketTopSales   MarketTopSales? @relation(fields: [marketTopSalesId], references: [id])
+  marketTopSalesId String          @unique
+  price            Int
+  value_token      Int
 }
 
 model MarketPokemon {
@@ -141,13 +199,21 @@ model Transaction {
 }
 
 model MyItems {
-  id         String   @id @default(uuid())
-  profile_id String
-  name       String
-  quantity   Int
-  created_at DateTime @default(now())
-  updated_at DateTime
-  user       Profile  @relation(fields: [profile_id], references: [id])
+  id           String   @id @default(uuid())
+  profile_id   String
+  name         String
+  quantity     Int
+  created_at   DateTime @default(now())
+  updated_at   DateTime
+  user         Profile  @relation(fields: [profile_id], references: [id])
+  detail_items Items?   @relation(fields: [name], references: [name])
 
   @@index([profile_id], map: "MyItems_profile_id_fkey")
+}
+
+model Items {
+  id      Int       @id @default(autoincrement())
+  name    String    @unique
+  img     String
+  MyItems MyItems[]
 }
