@@ -166,15 +166,31 @@ model MarketTopSalesToken {
 }
 
 model MarketPokemon {
-  id         String   @id @default(uuid())
-  price      Int
-  seller_id  String
-  buyer_id   String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  seller     Profile  @relation(fields: [seller_id], references: [id])
+  id                  String               @id @default(uuid())
+  price               Int
+  seller_id           String
+  buyer_id            String?
+  created_at          DateTime             @default(now())
+  updated_at          DateTime             @updatedAt
+  seller              Profile              @relation(fields: [seller_id], references: [id])
+  DetailMarketPokemon DetailMarketPokemon?
 
   @@index([seller_id], map: "MarketPokemon_seller_id_fkey")
+}
+
+model DetailMarketPokemon {
+  id                String        @id @default(uuid())
+  name              String
+  health            Int
+  attack            Int
+  defense           Int
+  level             Int
+  element           String
+  front_default     String
+  front_default_gif String
+  back_default_gif  String
+  market_pokemon_id String        @unique
+  market_pokemon    MarketPokemon @relation(fields: [market_pokemon_id], references: [id])
 }
 
 model MarketItems {
