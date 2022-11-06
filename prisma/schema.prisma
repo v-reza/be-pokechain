@@ -169,6 +169,7 @@ model MarketPokemon {
   id         String   @id @default(uuid())
   price      Int
   seller_id  String
+  buyer_id   String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   seller     Profile  @relation(fields: [seller_id], references: [id])
