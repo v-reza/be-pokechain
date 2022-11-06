@@ -11,6 +11,7 @@ const {
   pokemonEvolution: PokemonEvolution,
   arena: Arena,
   marketPokemon: MarketPokemon,
+  detailMarketPokemon: DetailMarketPokemon,
   transaction: Transaction,
   marketItems: MarketItems,
 } = prisma;
@@ -25,6 +26,7 @@ module.exports = {
   PokemonEvolution,
   Arena,
   MarketPokemon,
+  DetailMarketPokemon,
   Transaction,
   MarketItems
 };
