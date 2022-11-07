@@ -76,23 +76,21 @@ const login = async (req, res) => {
 
     const userUpdated = await User.findFirst({
       where: {
-         id: userId,
+        id: userId,
       },
       include: {
         profile: true,
       },
     });
 
-    const {
-      id: userIdUpdated,
-      username: usernameUpdated,
-      email: emailUpdated,
-      refresh_token: refreshTokenUpdated,
-      profile: profileUpdated,
-    } = userUpdated;
-
     const accessToken = await jwt.sign(
-      { userIdUpdated, usernameUpdated, emailUpdated, refreshTokenUpdated, profileUpdated },
+      {
+        userId: userUpdated.id,
+        username: userUpdated.username,
+        email: userUpdated.email,
+        refresh_token: userUpdated.refresh_token,
+        profile: userUpdated.profile,
+      },
       process.env.ACCESS_TOKEN_SECRET,
       {
         expiresIn: "20s",
@@ -134,7 +132,6 @@ const logout = async (req, res) => {
 const refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.query;
-    console.log(refreshToken)
     if (!refreshToken) return res.sendStatus(401);
 
     const user = await User.findFirst({
@@ -151,9 +148,9 @@ const refreshToken = async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
       (err, decoded) => {
         if (err) return res.sendStatus(403);
-        const { id: userId, username, email, profile } = user;
+        const { id: userId, username, email, profile, refresh_token } = user;
         const accessToken = jwt.sign(
-          { userId, username, email, profile },
+          { userId, username, email, profile, refresh_token },
           process.env.ACCESS_TOKEN_SECRET,
           {
             expiresIn: "15s",
@@ -167,20 +164,19 @@ const refreshToken = async (req, res) => {
   }
 };
 
-const users = async (req,res) =>{
-  try{
-    const user =  await User.findMany()
-    res.status(200).json(user)
-
-  }catch(e){
-    console.log(e)
+const users = async (req, res) => {
+  try {
+    const user = await User.findMany();
+    res.status(200).json(user);
+  } catch (e) {
+    console.log(e);
   }
-}
+};
 
 module.exports = {
   login,
   register,
   logout,
   refreshToken,
-  users
+  users,
 };
