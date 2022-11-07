@@ -17,24 +17,23 @@ model User {
 }
 
 model Profile {
-  id              String           @id @default(uuid())
-  increment_id    Int              @unique @default(autoincrement())
-  full_name       String?
-  picture         String?
-  balance         Int?
-  tier            Int              @default(1)
-  point           Int              @default(0)
-  created_at      DateTime         @default(now())
-  updated_at      DateTime         @updatedAt
-  user_id         String           @unique
-  user            User             @relation(fields: [user_id], references: [id])
-  market_items    MarketItems[]
-  market_pokemons MarketPokemon[]  @relation("Seller")
-  buyer           MarketPokemon[]  @relation("Buyer")
-  MarketTopSales  MarketTopSales[]
-  my_items        MyItems[]
-  my_pokemons     MyPokemon[]
-  transactions    Transaction[]
+  id           String          @id @default(uuid())
+  increment_id Int             @unique @default(autoincrement())
+  full_name    String?
+  picture      String?
+  balance      Int?
+  tier         Int             @default(1)
+  point        Int             @default(0)
+  total_sales  Int             @default(0)
+  created_at   DateTime        @default(now())
+  updated_at   DateTime        @updatedAt
+  user_id      String          @unique
+  user         User            @relation(fields: [user_id], references: [id])
+  market_place MarketPlace[]
+  my_items     MyItems[]
+  my_pokemons  MyPokemon[]
+  transactions Transaction[]
+  buyer        MarketPokemon[]
 }
 
 model MyPokemon {
@@ -109,23 +108,25 @@ model Arena {
   updated_at DateTime @updatedAt
 }
 
-model MarketTopSales {
-  id                String                 @id @default(uuid())
-  type              String
-  seller_id         String
-  created_at        DateTime               @default(now())
-  updated_at        DateTime               @updatedAt
-  seller            Profile                @relation(fields: [seller_id], references: [id])
-  top_sales_bundles MarketTopSalesBundles?
-  top_sales_items   MarketTopSalesItems?
-  top_sales_pokemon MarketTopSalesPokemon?
-  top_sales_token   MarketTopSalesToken?
+model MarketPlace {
+  id             String          @id @default(uuid())
+  type           String
+  seller_id      String
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  seller         Profile         @relation(fields: [seller_id], references: [id])
+  market_bundles MarketBundles[]
+  market_items   MarketItems[]
+  market_pokemon MarketPokemon[]
+  market_token   MarketToken[]
 
   @@index([seller_id], map: "MarketTopSales_seller_id_fkey")
 }
 
-model MarketTopSalesPokemon {
-  marketTopSalesId  String         @unique
+model MarketPokemon {
+  id                String      @id @default(uuid())
+  marketplace_id    String
+  buyer_id          String
   price             Int
   name              String
   attack            String
@@ -135,88 +136,68 @@ model MarketTopSalesPokemon {
   front_default     String
   front_default_gif String
   back_default_gif  String
-  MarketTopSales    MarketTopSales @relation(fields: [marketTopSalesId], references: [id])
-}
-
-model MarketTopSalesItems {
-  marketTopSalesId String         @unique
-  price            Int
-  name             String
-  rarity           String
-  MarketTopSales   MarketTopSales @relation(fields: [marketTopSalesId], references: [id])
-}
-
-model MarketTopSalesBundles {
-  marketTopSalesId String                      @unique
-  price            Int
-  MarketTopSales   MarketTopSales              @relation(fields: [marketTopSalesId], references: [id])
-  bundles_items    MarketTopSalesBundlesItems?
-}
-
-model MarketTopSalesBundlesItems {
-  marketTopSalesBundlesMarketTopSalesId String                @unique
-  item_name                             String
-  MarketTopSalesBundles                 MarketTopSalesBundles @relation(fields: [marketTopSalesBundlesMarketTopSalesId], references: [marketTopSalesId])
-}
-
-model MarketTopSalesToken {
-  marketTopSalesId String         @unique
-  price            Int
-  value_token      Int
-  MarketTopSales   MarketTopSales @relation(fields: [marketTopSalesId], references: [id])
-}
-
-model MarketPokemon {
-  id                    String               @id @default(uuid())
-  price                 Int
-  seller_id             String
-  created_at            DateTime             @default(now())
-  updated_at            DateTime             @updatedAt
-  buyer_id              String?
-  int_id                Int?
-  seller                Profile              @relation("Seller", fields: [seller_id], references: [id])
-  buyer                 Profile?             @relation("Buyer", fields: [buyer_id], references: [id])
-  detail_market_pokemon DetailMarketPokemon?
-
-  @@index([seller_id], map: "MarketPokemon_seller_id_fkey")
-  @@index([buyer_id], map: "MarketPokemon_buyer_id_key")
-}
-
-model DetailMarketPokemon {
-  id                String        @id @default(uuid())
-  name              String
-  health            Int
-  attack            Int
-  defense           Int
-  level             Int
-  element           String
-  front_default     String
-  front_default_gif String
-  back_default_gif  String
-  market_pokemon_id String        @unique
-  market_pokemon    MarketPokemon @relation(fields: [market_pokemon_id], references: [id])
+  status            String
+  buyer             Profile?    @relation(fields: [buyer_id], references: [id])
+  marketplace       MarketPlace @relation(fields: [marketplace_id], references: [id])
 }
 
 model MarketItems {
-  id         Int      @id @default(autoincrement())
-  price      Int
-  seller_id  String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  seller     Profile  @relation(fields: [seller_id], references: [id])
+  id             String      @id @default(uuid())
+  marketplace_id String
+  price          Int
+  name           String
+  rarity         String
+  marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
+}
 
-  @@index([seller_id], map: "MarketItems_seller_id_fkey")
+model MarketBundles {
+  id             String               @id @default(uuid())
+  marketplace_id String
+  price          Int
+  marketplace    MarketPlace          @relation(fields: [marketplace_id], references: [id])
+  bundles_items  MarketBundlesItems[]
+}
+
+model MarketBundlesItems {
+  id              String        @id @default(uuid())
+  marketbundle_id String
+  item_name       String
+  marketbundles   MarketBundles @relation(fields: [marketbundle_id], references: [id])
+}
+
+model MarketToken {
+  id             String      @id @default(uuid())
+  marketplace_id String
+  price          Int
+  token          Int
+  marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
 }
 
 model Transaction {
-  id          String  @id @default(uuid())
-  profile_id  String
-  status      String
-  total_price Int
-  order_id    String
-  user        Profile @relation(fields: [profile_id], references: [id])
+  id             String                    @id @default(uuid())
+  profile_id     String
+  status         String
+  price          Int
+  order_id       String
+  user           Profile                   @relation(fields: [profile_id], references: [id])
+  detail_pokemon TransactionDetailPokemon?
 
   @@index([profile_id], map: "Transaction_profile_id_fkey")
+}
+
+model TransactionDetailPokemon {
+  id                  String      @id @default(uuid())
+  transaction_id      String      @unique
+  name                String?
+  health              Int
+  attack              Int
+  defense             Int
+  level               Int?
+  element             String
+  front_default       String
+  front_default_gif   String
+  back_default_gif    String
+  transaction_pokemon Transaction @relation(fields: [transaction_id], references: [id])
 }
 
 model MyItems {
