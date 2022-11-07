@@ -1,8 +1,6 @@
 const { User } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv")
-dotenv.config()
 
 const register = async (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
@@ -13,8 +11,8 @@ const register = async (req, res) => {
     const haveUser = await User.findFirst({
       where: {
         OR: [{ email: email }, { username: username }],
-      }
-    })
+      },
+    });
     if (haveUser) return res.status(400).json({ msg: "User already exists" });
 
     const salt = await bcrypt.genSalt();
@@ -26,15 +24,15 @@ const register = async (req, res) => {
         password: hashPassword,
         profile: {
           create: {
-            balance: 0
-          }
-        }
+            balance: 0,
+          },
+        },
       },
       include: {
-        profile: true
-      }
+        profile: true,
+      },
     });
-    delete users.password
+    delete users.password;
     res.status(200).json({ msg: "Register Successful", user: users });
   } catch (e) {
     res.status(500).json({ msg: e.message });
@@ -49,8 +47,8 @@ const login = async (req, res) => {
         OR: [{ email: userOrEmail }, { username: userOrEmail }],
       },
       include: {
-        profile: true
-      }
+        profile: true,
+      },
     });
     if (!user) return res.status(400).json({ msg: "User not found" });
 
@@ -58,15 +56,8 @@ const login = async (req, res) => {
     if (!match) return res.status(400).json({ msg: "Wrong Password" });
 
     const { id: userId, username, email, profile } = user;
-    const accessToken = jwt.sign(
-      { userId, email, username, profile },
-      process.env.ACCESS_TOKEN_SECRET,
-      {
-        expiresIn: "20s",
-      }
-    );
 
-    const refreshToken = jwt.sign(
+    const refreshToken = await jwt.sign(
       { userId, email, username, profile },
       process.env.REFRESH_TOKEN_SECRET,
       {
@@ -83,24 +74,42 @@ const login = async (req, res) => {
       },
     });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+    const userUpdated = await User.findFirst({
+      where: {
+        id: userId,
+      },
+      include: {
+        profile: true,
+      },
     });
-    res.json({ accessToken });
+
+    const accessToken = await jwt.sign(
+      {
+        userId: userUpdated.id,
+        username: userUpdated.username,
+        email: userUpdated.email,
+        refresh_token: userUpdated.refresh_token,
+        profile: userUpdated.profile,
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: "20s",
+      }
+    );
+    res.json({ accessToken, msg: "Login Successfuls" });
   } catch (e) {
     res.status(500).json({ msg: e.message });
   }
 };
 
 const logout = async (req, res) => {
-  const { refreshToken } = req.cookies;
-  if (!refreshToken) return res.sendStatus(401);
+  const { refresh_token } = req.body;
+  if (!refresh_token) return res.sendStatus(401);
 
   try {
     const user = await User.findFirst({
       where: {
-        refresh_token: refreshToken,
+        refresh_token: refresh_token,
       },
     });
 
@@ -114,7 +123,6 @@ const logout = async (req, res) => {
         refresh_token: null,
       },
     });
-    res.clearCookie("refreshToken");
     return res.status(200).json({ msg: "Logout Successful" });
   } catch (e) {
     res.status(500).json({ msg: e.message });
@@ -123,7 +131,7 @@ const logout = async (req, res) => {
 
 const refreshToken = async (req, res) => {
   try {
-    const { refreshToken } = req.cookies;
+    const { refreshToken } = req.query;
     if (!refreshToken) return res.sendStatus(401);
 
     const user = await User.findFirst({
@@ -131,8 +139,8 @@ const refreshToken = async (req, res) => {
         refresh_token: refreshToken,
       },
       include: {
-        profile: true
-      }
+        profile: true,
+      },
     });
     if (!user) return res.sendStatus(403);
     jwt.verify(
@@ -140,9 +148,9 @@ const refreshToken = async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
       (err, decoded) => {
         if (err) return res.sendStatus(403);
-        const { id: userId, username, email, profile } = user;
+        const { id: userId, username, email, profile, refresh_token } = user;
         const accessToken = jwt.sign(
-          { userId, username, email, profile },
+          { userId, username, email, profile, refresh_token },
           process.env.ACCESS_TOKEN_SECRET,
           {
             expiresIn: "15s",
@@ -156,9 +164,19 @@ const refreshToken = async (req, res) => {
   }
 };
 
+const users = async (req, res) => {
+  try {
+    const user = await User.findMany();
+    res.status(200).json(user);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 module.exports = {
   login,
   register,
   logout,
   refreshToken,
+  users,
 };

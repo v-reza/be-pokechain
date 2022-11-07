@@ -29,7 +29,8 @@ model Profile {
   user_id         String           @unique
   user            User             @relation(fields: [user_id], references: [id])
   market_items    MarketItems[]
-  market_pokemons MarketPokemon[]
+  market_pokemons MarketPokemon[]  @relation("Seller")
+  buyer           MarketPokemon[]  @relation("Buyer")
   MarketTopSales  MarketTopSales[]
   my_items        MyItems[]
   my_pokemons     MyPokemon[]
@@ -167,16 +168,18 @@ model MarketTopSalesToken {
 
 model MarketPokemon {
   id                    String               @id @default(uuid())
-  int_id                Int?
   price                 Int
   seller_id             String
   created_at            DateTime             @default(now())
   updated_at            DateTime             @updatedAt
   buyer_id              String?
-  seller                Profile              @relation(fields: [seller_id], references: [id])
+  int_id                Int?
+  seller                Profile              @relation("Seller", fields: [seller_id], references: [id])
+  buyer                 Profile?             @relation("Buyer", fields: [buyer_id], references: [id])
   detail_market_pokemon DetailMarketPokemon?
 
   @@index([seller_id], map: "MarketPokemon_seller_id_fkey")
+  @@index([buyer_id], map: "MarketPokemon_buyer_id_key")
 }
 
 model DetailMarketPokemon {
