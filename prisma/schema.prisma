@@ -110,8 +110,7 @@ model Arena {
 
 model MarketPlace {
   id             String          @id @default(uuid())
-  type           String
-  seller_id      String
+  seller_id      String          @unique
   created_at     DateTime        @default(now())
   updated_at     DateTime        @updatedAt
   seller         Profile         @relation(fields: [seller_id], references: [id])
@@ -125,18 +124,22 @@ model MarketPlace {
 
 model MarketPokemon {
   id                String      @id @default(uuid())
+  increment_id      Int?        @unique
   marketplace_id    String
-  buyer_id          String
+  buyer_id          String?
+  health            Int
   price             Int
   name              String
-  attack            String
-  defense           String
+  attack            Int
+  defense           Int
   level             Int
   element           String
   front_default     String
   front_default_gif String
   back_default_gif  String
   status            String
+  created_at        DateTime?    @default(now())
+  updated_at        DateTime?    @updatedAt
   buyer             Profile?    @relation(fields: [buyer_id], references: [id])
   marketplace       MarketPlace @relation(fields: [marketplace_id], references: [id])
 }
