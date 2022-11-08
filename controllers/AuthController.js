@@ -104,6 +104,7 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   const { refresh_token } = req.body;
+  console.log(req.body)
   if (!refresh_token) return res.sendStatus(401);
 
   try {
