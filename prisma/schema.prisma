@@ -127,10 +127,8 @@ model MarketPlace {
 
 model MarketPokemon {
   id                String      @id @default(uuid())
-  increment_id      Int?        @unique
   marketplace_id    String
   buyer_id          String?
-  health            Int
   price             Int
   name              String
   attack            Int
@@ -141,10 +139,15 @@ model MarketPokemon {
   front_default_gif String
   back_default_gif  String
   status            String
+  increment_id      Int?        @unique
+  health            Int
   created_at        DateTime?   @default(now())
   updated_at        DateTime?   @updatedAt
   buyer             Profile?    @relation(fields: [buyer_id], references: [id])
   marketplace       MarketPlace @relation(fields: [marketplace_id], references: [id])
+
+  @@index([buyer_id], map: "MarketPokemon_buyer_id_fkey")
+  @@index([marketplace_id], map: "MarketPokemon_marketplace_id_fkey")
 }
 
 model MarketItems {
@@ -159,6 +162,8 @@ model MarketItems {
   updated_at     DateTime?   @updatedAt
   buyer          Profile?    @relation(fields: [buyer_id], references: [id])
   marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
+
+  @@index([marketplace_id], map: "MarketItems_marketplace_id_fkey")
 }
 
 model MarketBundles {
@@ -172,6 +177,8 @@ model MarketBundles {
   buyer          Profile?             @relation(fields: [buyer_id], references: [id])
   marketplace    MarketPlace          @relation(fields: [marketplace_id], references: [id])
   bundles_items  MarketBundlesItems[]
+
+  @@index([marketplace_id], map: "MarketBundles_marketplace_id_fkey")
 }
 
 model MarketBundlesItems {
@@ -182,6 +189,8 @@ model MarketBundlesItems {
   created_at      DateTime?     @default(now())
   updated_at      DateTime?     @updatedAt
   marketbundles   MarketBundles @relation(fields: [marketbundle_id], references: [id])
+
+  @@index([marketbundle_id], map: "MarketBundlesItems_marketbundle_id_fkey")
 }
 
 model MarketToken {
@@ -195,6 +204,8 @@ model MarketToken {
   updated_at     DateTime?   @updatedAt
   buyer          Profile?    @relation(fields: [buyer_id], references: [id])
   marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
+
+  @@index([marketplace_id], map: "MarketToken_marketplace_id_fkey")
 }
 
 model Transaction {

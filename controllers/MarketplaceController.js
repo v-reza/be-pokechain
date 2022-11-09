@@ -7,6 +7,7 @@ const {
   MarketItems,
   MarketBundles,
   MarketToken,
+  Transaction,
 } = require("../models");
 
 const recentSales = async (req, res) => {
@@ -271,7 +272,30 @@ const dataDummy = async (req, res) => {
   }
 };
 
+const overallStats = async (req, res) => {
+  try {
+    const user = await User.findMany({
+      include: {
+        profile: true,
+      },
+    });
+    const transaction = await Transaction.findMany();
+    let total_sales = 0;
+    let total_volume = 0;
+    let pokemon_sold = transaction.length;
+    user.map((data) => {
+      total_sales += data.profile.total_sales;
+    });
+    transaction.map((data) => {
+      total_volume += data.price;
+    });
+    return res.status(200).json({ total_sales, total_volume, pokemon_sold });
+  } catch (error) {
+    return res.status(500).json({ err: error.message });
+  }
+};
+
 module.exports = {
   recentSales,
-  dataDummy,
+  overallStats,
 };
