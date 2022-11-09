@@ -1,4 +1,4 @@
-const { recentSales } = require("../../controllers/MarketplaceController");
+const { recentSales, dataDummy } = require("../../controllers/MarketplaceController");
 
 const router = require("express").Router();
 
