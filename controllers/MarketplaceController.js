@@ -295,7 +295,121 @@ const overallStats = async (req, res) => {
   }
 };
 
+const recentListings = async (req, res) => {
+  try {
+    const { type } = req.query;
+    let marketplace;
+    if (type === "pokemon") {
+      const marketPokemon = await MarketPokemon.findMany({
+        take: 9,
+        include: {
+          buyer: {
+            include: {
+              user: true,
+            },
+          },
+          marketplace: {
+            include: {
+              seller: {
+                include: {
+                  user: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      marketplace = marketPokemon;
+    } else if (type === "items") {
+      const marketItem = await MarketItems.findMany({
+        take: 9,
+        include: {
+          buyer: {
+            include: {
+              user: true,
+            },
+          },
+          marketplace: {
+            include: {
+              seller: {
+                include: {
+                  user: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      marketplace = marketItem;
+    } else if (type === "bundles") {
+      const marketBundles = await MarketBundles.findMany({
+        take: 9,
+        include: {
+          buyer: {
+            include: {
+              user: true,
+            },
+          },
+          marketplace: {
+            include: {
+              seller: {
+                include: {
+                  user: true,
+                },
+              },
+            },
+          },
+          bundles_items: true,
+        },
+      });
+      marketplace = marketBundles;
+    } else if (type === "token") {
+      const marketToken = await MarketToken.findMany({
+        take: 9,
+        include: {
+          buyer: {
+            include: {
+              user: true,
+            },
+          },
+          marketplace: {
+            include: {
+              seller: {
+                include: {
+                  user: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      marketplace = marketToken;
+    } else {
+      return res.status(400).json({ msg: "Type not found" });
+    }
+
+    marketplace.map((item) => {
+      delete item.buyer?.user.password;
+      delete item.buyer?.user.refresh_token;
+      delete item.marketplace.seller.user.password;
+      delete item.marketplace.seller.user.refresh_token;
+      delete item.marketplace.seller.user.email;
+      delete item.marketplace.seller.balance;
+      delete item.marketplace.seller.point;
+      delete item.marketplace.seller.tier;
+      delete item.marketplace.seller.total_sales;
+      delete item.marketplace.seller.increment_id;
+    });
+    return res.status(200).json({ results: marketplace });
+  } catch (error) {
+    return res.status(500).json({ err: error.message });
+  }
+}
+
 module.exports = {
   recentSales,
   overallStats,
+  recentListings
 };
