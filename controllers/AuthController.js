@@ -10,6 +10,7 @@ const register = async (req, res) => {
   try {
     const haveUser = await User.findFirst({
       where: {
+        NOT:{username:'gamemaster'},
         OR: [{ email: email }, { username: username }],
       },
     });
