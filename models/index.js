@@ -19,6 +19,7 @@ const {
   transaction: Transaction,
   transactionDetailPokemon: TransactionDetailPokemon,
   items: Items,
+  listItems: ListItems
 } = prisma;
 
 module.exports = {
@@ -39,4 +40,5 @@ module.exports = {
   Transaction,
   TransactionDetailPokemon,
   Items,
+  ListItems
 };
