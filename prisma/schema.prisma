@@ -24,19 +24,31 @@ model Profile {
   balance              Int?
   tier                 Int             @default(1)
   point                Int             @default(0)
-  total_sales          Int             @default(0)
   created_at           DateTime        @default(now())
   updated_at           DateTime        @updatedAt
   user_id              String          @unique
   user                 User            @relation(fields: [user_id], references: [id])
-  market_place         MarketPlace[]
+  buyer_market_bundles MarketBundles[]
+  buyer_market_items   MarketItems[]
+  market_place         MarketPlace?
+  buyer                MarketPokemon[]
+  buyer_market_token   MarketToken[]
   my_items             MyItems[]
   my_pokemons          MyPokemon[]
   transactions         Transaction[]
-  buyer                MarketPokemon[]
-  buyer_market_items   MarketItems[]
-  buyer_market_bundles MarketBundles[]
-  buyer_market_token   MarketToken[]
+  sales                Sales[]
+}
+
+model Sales {
+  id             String      @id @default(uuid())
+  profile_id     String
+  marketplace_id String
+  sales          Int
+  status         Int         @default(0)
+  created_at     DateTime?   @default(now())
+  updated_at     DateTime?   @updatedAt
+  marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
+  profile        Profile?    @relation(fields: [profile_id], references: [id])
 }
 
 model MyPokemon {
@@ -121,6 +133,7 @@ model MarketPlace {
   market_items   MarketItems[]
   market_pokemon MarketPokemon[]
   market_token   MarketToken[]
+  Sales          Sales[]
 
   @@index([seller_id], map: "MarketTopSales_seller_id_fkey")
 }
@@ -152,41 +165,43 @@ model MarketPokemon {
 
 model MarketItems {
   id             String      @id @default(uuid())
-  buyer_id       String?
-  increment_id   Int?        @unique
   marketplace_id String
   price          Int
   name           String
   rarity         String
+  buyer_id       String?
   created_at     DateTime?   @default(now())
   updated_at     DateTime?   @updatedAt
+  increment_id   Int?        @unique
   buyer          Profile?    @relation(fields: [buyer_id], references: [id])
   marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
 
   @@index([marketplace_id], map: "MarketItems_marketplace_id_fkey")
+  @@index([buyer_id], map: "MarketItems_buyer_id_fkey")
 }
 
 model MarketBundles {
   id             String               @id @default(uuid())
   marketplace_id String
-  buyer_id       String?
-  increment_id   Int?                 @unique
   price          Int
+  buyer_id       String?
   created_at     DateTime?            @default(now())
+  increment_id   Int?                 @unique
   updated_at     DateTime?            @updatedAt
   buyer          Profile?             @relation(fields: [buyer_id], references: [id])
   marketplace    MarketPlace          @relation(fields: [marketplace_id], references: [id])
   bundles_items  MarketBundlesItems[]
 
   @@index([marketplace_id], map: "MarketBundles_marketplace_id_fkey")
+  @@index([buyer_id], map: "MarketBundles_buyer_id_fkey")
 }
 
 model MarketBundlesItems {
   id              String        @id @default(uuid())
   marketbundle_id String
   item_name       String
-  rarity          String
   created_at      DateTime?     @default(now())
+  rarity          String
   updated_at      DateTime?     @updatedAt
   marketbundles   MarketBundles @relation(fields: [marketbundle_id], references: [id])
 
@@ -195,17 +210,18 @@ model MarketBundlesItems {
 
 model MarketToken {
   id             String      @id @default(uuid())
-  buyer_id       String?
-  increment_id   Int?        @unique
   marketplace_id String
   price          Int
   token          Decimal
+  buyer_id       String?
   created_at     DateTime?   @default(now())
+  increment_id   Int?        @unique
   updated_at     DateTime?   @updatedAt
   buyer          Profile?    @relation(fields: [buyer_id], references: [id])
   marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
 
   @@index([marketplace_id], map: "MarketToken_marketplace_id_fkey")
+  @@index([buyer_id], map: "MarketToken_buyer_id_fkey")
 }
 
 model Transaction {
@@ -214,6 +230,8 @@ model Transaction {
   status         String
   price          Int
   order_id       String
+  created_at     DateTime                  @default(now())
+  updated_at     DateTime
   user           Profile                   @relation(fields: [profile_id], references: [id])
   detail_pokemon TransactionDetailPokemon?
 
@@ -261,4 +279,3 @@ model ListItems {
   name   String @unique
   rarity String
 }
-

@@ -8,6 +8,7 @@ const {
   MarketBundles,
   MarketToken,
   Transaction,
+  Sales,
 } = require("../models");
 
 const recentSales = async (req, res) => {
@@ -110,7 +111,7 @@ const recentSales = async (req, res) => {
         },
         orderBy: {
           created_at: "desc",
-        }
+        },
       });
       marketplace = marketToken;
     } else {
@@ -274,22 +275,89 @@ const dataDummy = async (req, res) => {
 
 const overallStats = async (req, res) => {
   try {
-    const user = await User.findMany({
-      include: {
-        profile: true,
-      },
-    });
+    const { selected } = req.query;
+    const sales = await Sales.findMany();
     const transaction = await Transaction.findMany();
+
     let total_sales = 0;
     let total_volume = 0;
-    let pokemon_sold = transaction.length;
-    user.map((data) => {
-      total_sales += data.profile.total_sales;
+    let pokemon_sold = 0;
+
+    if (selected == "24H") {
+      sales
+        .filter(
+          (sales) =>
+            new Date(sales.created_at).getTime() >
+            new Date().getTime() - 24 * 60 * 60 * 1000
+        )
+        .map((data) => {
+          total_sales += data.sales;
+        });
+      transaction
+        .filter(
+          (transaction) =>
+            new Date(transaction.created_at).getTime() >
+            new Date().getTime() - 24 * 60 * 60 * 1000
+        )
+        .map((data) => {
+          pokemon_sold += 1;
+          total_volume += data.price;
+        });
+    } else if (selected == "7D") {
+      sales
+        .filter(
+          (sales) =>
+            new Date(sales.created_at).getTime() >
+            new Date().getTime() - 7 * 24 * 60 * 60 * 1000
+        )
+        .map((data) => {
+          total_sales += data.sales;
+        });
+      transaction
+        .filter(
+          (transaction) =>
+            new Date(transaction.created_at).getTime() >
+            new Date().getTime() - 7 * 24 * 60 * 60 * 1000
+        )
+        .map((data) => {
+          pokemon_sold += 1;
+          total_volume += data.price;
+        });
+    } else if (selected == "30D") {
+      sales
+        .filter(
+          (sales) =>
+            new Date(sales.created_at).getTime() >
+            new Date().getTime() - 30 * 24 * 60 * 60 * 1000
+        )
+        .map((data) => {
+          total_sales += data.sales;
+        });
+      transaction
+        .filter(
+          (transaction) =>
+            new Date(transaction.created_at).getTime() >
+            new Date().getTime() - 30 * 24 * 60 * 60 * 1000
+        )
+        .map((data) => {
+          pokemon_sold += 1;
+          total_volume += data.price;
+        });
+    } else {
+      sales.map((data) => {
+        total_sales += data.sales;
+      });
+      transaction.map((data) => {
+        pokemon_sold += 1;
+        total_volume += data.price;
+      });
+    }
+
+    return res.status(200).json({
+      total_sales,
+      total_volume,
+      pokemon_sold,
     });
-    transaction.map((data) => {
-      total_volume += data.price;
-    });
-    return res.status(200).json({ total_sales, total_volume, pokemon_sold });
   } catch (error) {
     return res.status(500).json({ err: error.message });
   }
@@ -406,10 +474,15 @@ const recentListings = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ err: error.message });
   }
+};
+
+const topSales = async (req,res) =>{
+
 }
 
 module.exports = {
   recentSales,
   overallStats,
-  recentListings
+  recentListings,
+  topSales,
 };
