@@ -476,9 +476,12 @@ const recentListings = async (req, res) => {
   }
 };
 
-const topSales = async (req,res) =>{
-
-}
+const topSales = async (req, res) => {
+  try {
+    const marketPokemon = await MarketPokemon.findMany() 
+    return res.status(200).json({ marketPokemon });
+  } catch (error) {}
+};
 
 module.exports = {
   recentSales,

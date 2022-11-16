@@ -35,20 +35,8 @@ model Profile {
   buyer_market_token   MarketToken[]
   my_items             MyItems[]
   my_pokemons          MyPokemon[]
-  transactions         Transaction[]
   sales                Sales[]
-}
-
-model Sales {
-  id             String      @id @default(uuid())
-  profile_id     String
-  marketplace_id String
-  sales          Int
-  status         Int         @default(0)
-  created_at     DateTime?   @default(now())
-  updated_at     DateTime?   @updatedAt
-  marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
-  profile        Profile?    @relation(fields: [profile_id], references: [id])
+  transactions         Transaction[]
 }
 
 model MyPokemon {
@@ -133,7 +121,6 @@ model MarketPlace {
   market_items   MarketItems[]
   market_pokemon MarketPokemon[]
   market_token   MarketToken[]
-  Sales          Sales[]
 
   @@index([seller_id], map: "MarketTopSales_seller_id_fkey")
 }
@@ -151,7 +138,7 @@ model MarketPokemon {
   front_default     String
   front_default_gif String
   back_default_gif  String
-  status            String
+  status            Int?        @default(1) @db.TinyInt
   increment_id      Int?        @unique
   health            Int
   created_at        DateTime?   @default(now())
@@ -173,6 +160,7 @@ model MarketItems {
   created_at     DateTime?   @default(now())
   updated_at     DateTime?   @updatedAt
   increment_id   Int?        @unique
+  type           String?     @db.VarChar(100)
   buyer          Profile?    @relation(fields: [buyer_id], references: [id])
   marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
 
@@ -278,4 +266,17 @@ model ListItems {
   id     Int    @id @default(autoincrement())
   name   String @unique
   rarity String
+}
+
+model Sales {
+  id         String    @id @default(uuid())
+  profile_id String
+  type       String
+  sales      Int
+  status     Int       @default(0)
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+  profile    Profile   @relation(fields: [profile_id], references: [id])
+
+  @@index([profile_id], map: "Sales_profile_id_fkey")
 }
