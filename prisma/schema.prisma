@@ -7,126 +7,105 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  username      String   @unique
-  password      String
-  refresh_token String?  @db.LongText
-  profile       Profile?
-}
+model ActivityToken {
+  id                 String   @id
+  activity_id        String   @unique
+  status             String
+  old_volume_balance Float
+  old_volume_token   Float
+  new_volume_balance Float
+  new_volume_token   Float
+  created_at         DateTime @default(now())
+  updated_at         DateTime
+  profile_id         String
+  Profile            Profile  @relation(fields: [profile_id], references: [id])
 
-model Profile {
-  id                   String          @id @default(uuid())
-  increment_id         Int             @unique @default(autoincrement())
-  full_name            String?
-  picture              String?
-  balance              Int?
-  tier                 Int             @default(1)
-  point                Int             @default(0)
-  created_at           DateTime        @default(now())
-  updated_at           DateTime        @updatedAt
-  user_id              String          @unique
-  user                 User            @relation(fields: [user_id], references: [id])
-  buyer_market_bundles MarketBundles[]
-  buyer_market_items   MarketItems[]
-  market_place         MarketPlace?
-  buyer                MarketPokemon[]
-  buyer_market_token   MarketToken[]
-  my_items             MyItems[]
-  my_pokemons          MyPokemon[]
-  sales                Sales[]
-  transactions         Transaction[]
-}
-
-model MyPokemon {
-  id             String           @id @default(uuid())
-  created_at     DateTime         @default(now())
-  updated_at     DateTime         @updatedAt
-  is_sell        Boolean          @default(false)
-  profile_id     String?
-  profile        Profile?         @relation(fields: [profile_id], references: [id])
-  detail_pokemon MyDetailPokemon?
-
-  @@index([profile_id], map: "MyPokemon_profile_id_fkey")
-}
-
-model MyDetailPokemon {
-  id                String    @id @default(uuid())
-  name              String?
-  health            Int
-  attack            Int
-  defense           Int
-  level             Int?
-  my_pokemon_id     String    @unique
-  element           String
-  front_default     String
-  front_default_gif String
-  back_default_gif  String
-  my_pokemon        MyPokemon @relation(fields: [my_pokemon_id], references: [id])
-}
-
-model Pokemon {
-  id                 Int                @id @default(autoincrement())
-  name               String
-  created_at         DateTime?          @default(now())
-  updated_at         DateTime?          @updatedAt
-  attack             Int
-  defense            Int
-  health             Int
-  element            String
-  back_default_gif   String
-  front_default      String
-  front_default_gif  String
-  level              Int                @default(1)
-  pokemon_evolutions PokemonEvolution[]
-}
-
-model PokemonEvolution {
-  id                Int       @id @default(autoincrement())
-  pokemon_id        Int
-  name              String
-  health            Int
-  attack            Int
-  defense           Int
-  level             Int       @default(1)
-  created_at        DateTime? @default(now())
-  updated_at        DateTime? @updatedAt
-  element           String
-  back_default_gif  String
-  front_default     String
-  front_default_gif String
-  qty_required_item Int?
-  required_item     String?
-  pokemon           Pokemon   @relation(fields: [pokemon_id], references: [id])
-
-  @@index([pokemon_id], map: "PokemonEvolution_pokemon_id_fkey")
+  @@index([profile_id], map: "ActivityToken_profile_id_fkey")
 }
 
 model Arena {
-  id         String   @id @default(uuid())
+  id         String   @id
   name       String
   point      Int
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  updated_at DateTime
+}
+
+model Items {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  img  String
+}
+
+model ListItems {
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  rarity String
+}
+
+model MarketBundles {
+  id                 String               @id
+  marketplace_id     String
+  price              Int
+  buyer_id           String?
+  created_at         DateTime?            @default(now())
+  increment_id       Int?                 @unique
+  updated_at         DateTime?
+  Profile            Profile?             @relation(fields: [buyer_id], references: [id])
+  MarketPlace        MarketPlace          @relation(fields: [marketplace_id], references: [id])
+  MarketBundlesItems MarketBundlesItems[]
+
+  @@index([buyer_id], map: "MarketBundles_buyer_id_fkey")
+  @@index([marketplace_id], map: "MarketBundles_marketplace_id_fkey")
+}
+
+model MarketBundlesItems {
+  id              String        @id
+  marketbundle_id String
+  item_name       String
+  created_at      DateTime?     @default(now())
+  rarity          String
+  updated_at      DateTime?
+  MarketBundles   MarketBundles @relation(fields: [marketbundle_id], references: [id])
+
+  @@index([marketbundle_id], map: "MarketBundlesItems_marketbundle_id_fkey")
+}
+
+model MarketItems {
+  id             String      @id
+  marketplace_id String
+  price          Int
+  name           String
+  rarity         String
+  buyer_id       String?
+  created_at     DateTime?   @default(now())
+  updated_at     DateTime?
+  increment_id   Int?        @unique
+  type           String?     @db.VarChar(100)
+  quantity       Int?        @default(1)
+  Profile        Profile?    @relation(fields: [buyer_id], references: [id])
+  MarketPlace    MarketPlace @relation(fields: [marketplace_id], references: [id])
+
+  @@index([buyer_id], map: "MarketItems_buyer_id_fkey")
+  @@index([marketplace_id], map: "MarketItems_marketplace_id_fkey")
 }
 
 model MarketPlace {
-  id             String          @id @default(uuid())
-  seller_id      String          @unique
-  created_at     DateTime        @default(now())
-  updated_at     DateTime        @updatedAt
-  seller         Profile         @relation(fields: [seller_id], references: [id])
-  market_bundles MarketBundles[]
-  market_items   MarketItems[]
-  market_pokemon MarketPokemon[]
-  market_token   MarketToken[]
+  id            String          @id
+  seller_id     String          @unique
+  created_at    DateTime        @default(now())
+  updated_at    DateTime
+  Profile       Profile         @relation(fields: [seller_id], references: [id])
+  MarketBundles MarketBundles[]
+  MarketItems   MarketItems[]
+  MarketPokemon MarketPokemon[]
+  MarketToken   MarketToken[]
 
   @@index([seller_id], map: "MarketTopSales_seller_id_fkey")
 }
 
 model MarketPokemon {
-  id                String      @id @default(uuid())
+  id                String      @id
   marketplace_id    String
   buyer_id          String?
   price             Int
@@ -142,141 +121,179 @@ model MarketPokemon {
   increment_id      Int?        @unique
   health            Int
   created_at        DateTime?   @default(now())
-  updated_at        DateTime?   @updatedAt
-  buyer             Profile?    @relation(fields: [buyer_id], references: [id])
-  marketplace       MarketPlace @relation(fields: [marketplace_id], references: [id])
+  updated_at        DateTime?
+  Profile           Profile?    @relation(fields: [buyer_id], references: [id])
+  MarketPlace       MarketPlace @relation(fields: [marketplace_id], references: [id])
 
   @@index([buyer_id], map: "MarketPokemon_buyer_id_fkey")
   @@index([marketplace_id], map: "MarketPokemon_marketplace_id_fkey")
 }
 
-model MarketItems {
-  id             String      @id @default(uuid())
-  marketplace_id String
-  price          Int
-  name           String
-  rarity         String
-  buyer_id       String?
-  created_at     DateTime?   @default(now())
-  updated_at     DateTime?   @updatedAt
-  increment_id   Int?        @unique
-  type           String?     @db.VarChar(100)
-  buyer          Profile?    @relation(fields: [buyer_id], references: [id])
-  marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
-
-  @@index([marketplace_id], map: "MarketItems_marketplace_id_fkey")
-  @@index([buyer_id], map: "MarketItems_buyer_id_fkey")
-}
-
-model MarketBundles {
-  id             String               @id @default(uuid())
-  marketplace_id String
-  price          Int
-  buyer_id       String?
-  created_at     DateTime?            @default(now())
-  increment_id   Int?                 @unique
-  updated_at     DateTime?            @updatedAt
-  buyer          Profile?             @relation(fields: [buyer_id], references: [id])
-  marketplace    MarketPlace          @relation(fields: [marketplace_id], references: [id])
-  bundles_items  MarketBundlesItems[]
-
-  @@index([marketplace_id], map: "MarketBundles_marketplace_id_fkey")
-  @@index([buyer_id], map: "MarketBundles_buyer_id_fkey")
-}
-
-model MarketBundlesItems {
-  id              String        @id @default(uuid())
-  marketbundle_id String
-  item_name       String
-  created_at      DateTime?     @default(now())
-  rarity          String
-  updated_at      DateTime?     @updatedAt
-  marketbundles   MarketBundles @relation(fields: [marketbundle_id], references: [id])
-
-  @@index([marketbundle_id], map: "MarketBundlesItems_marketbundle_id_fkey")
-}
-
 model MarketToken {
-  id             String      @id @default(uuid())
+  id             String      @id
   marketplace_id String
   price          Int
   token          Decimal
   buyer_id       String?
   created_at     DateTime?   @default(now())
   increment_id   Int?        @unique
-  updated_at     DateTime?   @updatedAt
-  buyer          Profile?    @relation(fields: [buyer_id], references: [id])
-  marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
+  updated_at     DateTime?
+  Profile        Profile?    @relation(fields: [buyer_id], references: [id])
+  MarketPlace    MarketPlace @relation(fields: [marketplace_id], references: [id])
 
-  @@index([marketplace_id], map: "MarketToken_marketplace_id_fkey")
   @@index([buyer_id], map: "MarketToken_buyer_id_fkey")
+  @@index([marketplace_id], map: "MarketToken_marketplace_id_fkey")
 }
 
-model Transaction {
-  id             String                    @id @default(uuid())
-  profile_id     String
-  status         String
-  price          Int
-  order_id       String
-  created_at     DateTime                  @default(now())
-  updated_at     DateTime
-  user           Profile                   @relation(fields: [profile_id], references: [id])
-  detail_pokemon TransactionDetailPokemon?
-
-  @@index([profile_id], map: "Transaction_profile_id_fkey")
-}
-
-model TransactionDetailPokemon {
-  id                  String      @id @default(uuid())
-  transaction_id      String      @unique
-  name                String?
-  health              Int
-  attack              Int
-  defense             Int
-  level               Int?
-  element             String
-  front_default       String
-  front_default_gif   String
-  back_default_gif    String
-  transaction_pokemon Transaction @relation(fields: [transaction_id], references: [id])
+model MyDetailPokemon {
+  id                String    @id
+  name              String?
+  health            Int
+  attack            Int
+  defense           Int
+  level             Int?
+  my_pokemon_id     String    @unique
+  element           String
+  front_default     String
+  front_default_gif String
+  back_default_gif  String
+  MyPokemon         MyPokemon @relation(fields: [my_pokemon_id], references: [id])
 }
 
 model MyItems {
-  id           String   @id @default(uuid())
-  profile_id   String
-  name         String
-  quantity     Int
-  created_at   DateTime @default(now())
-  updated_at   DateTime
-  detail_items Items    @relation(fields: [name], references: [name])
-  user         Profile  @relation(fields: [profile_id], references: [id])
+  id         String   @id
+  profile_id String
+  name       String
+  quantity   Int
+  created_at DateTime @default(now())
+  updated_at DateTime
+  Profile    Profile  @relation(fields: [profile_id], references: [id])
 
-  @@index([profile_id], map: "MyItems_profile_id_fkey")
   @@index([name], map: "MyItems_name_fkey")
+  @@index([profile_id], map: "MyItems_profile_id_fkey")
 }
 
-model Items {
-  id      Int       @id @default(autoincrement())
-  name    String    @unique
-  img     String
-  MyItems MyItems[]
+model MyPokemon {
+  id              String           @id
+  created_at      DateTime         @default(now())
+  updated_at      DateTime
+  is_sell         Boolean          @default(false)
+  profile_id      String?
+  Profile         Profile?         @relation(fields: [profile_id], references: [id])
+  MyDetailPokemon MyDetailPokemon?
+
+  @@index([profile_id], map: "MyPokemon_profile_id_fkey")
 }
 
-model ListItems {
-  id     Int    @id @default(autoincrement())
-  name   String @unique
-  rarity String
+model Pokemon {
+  id                Int                @id @default(autoincrement())
+  name              String
+  created_at        DateTime?          @default(now())
+  updated_at        DateTime?
+  attack            Int
+  defense           Int
+  health            Int
+  element           String
+  back_default_gif  String
+  front_default     String
+  front_default_gif String
+  level             Int                @default(1)
+  PokemonEvolution  PokemonEvolution[]
+}
+
+model PokemonEvolution {
+  id                Int       @id @default(autoincrement())
+  pokemon_id        Int
+  name              String
+  health            Int
+  attack            Int
+  defense           Int
+  level             Int       @default(1)
+  created_at        DateTime? @default(now())
+  updated_at        DateTime?
+  element           String
+  back_default_gif  String
+  front_default     String
+  front_default_gif String
+  qty_required_item Int?
+  required_item     String?
+  Pokemon           Pokemon   @relation(fields: [pokemon_id], references: [id])
+
+  @@index([pokemon_id], map: "PokemonEvolution_pokemon_id_fkey")
+}
+
+model Profile {
+  id            String          @id
+  increment_id  Int             @unique @default(autoincrement())
+  full_name     String?
+  picture       String?
+  balance       Float?
+  tier          Int             @default(1)
+  point         Int             @default(0)
+  created_at    DateTime        @default(now())
+  updated_at    DateTime
+  user_id       String          @unique
+  token         Decimal?
+  User          User            @relation(fields: [user_id], references: [id])
+  ActivityToken ActivityToken[]
+  MarketBundles MarketBundles[]
+  MarketItems   MarketItems[]
+  MarketPlace   MarketPlace?
+  MarketPokemon MarketPokemon[]
+  MarketToken   MarketToken[]
+  MyItems       MyItems[]
+  MyPokemon     MyPokemon[]
+  Sales         Sales[]
+  Transaction   Transaction[]
 }
 
 model Sales {
-  id         String    @id @default(uuid())
+  id         String    @id
   profile_id String
   type       String
   sales      Int
   status     Int       @default(0)
   created_at DateTime? @default(now())
-  updated_at DateTime? @updatedAt
-  profile    Profile   @relation(fields: [profile_id], references: [id])
+  updated_at DateTime?
+  Profile    Profile   @relation(fields: [profile_id], references: [id])
 
   @@index([profile_id], map: "Sales_profile_id_fkey")
+}
+
+model Transaction {
+  id                       String                    @id
+  profile_id               String
+  status                   String
+  price                    Int
+  order_id                 String
+  created_at               DateTime                  @default(now())
+  updated_at               DateTime
+  Profile                  Profile                   @relation(fields: [profile_id], references: [id])
+  TransactionDetailPokemon TransactionDetailPokemon?
+
+  @@index([profile_id], map: "Transaction_profile_id_fkey")
+}
+
+model TransactionDetailPokemon {
+  id                String      @id
+  transaction_id    String      @unique
+  name              String?
+  health            Int
+  attack            Int
+  defense           Int
+  level             Int?
+  element           String
+  front_default     String
+  front_default_gif String
+  back_default_gif  String
+  Transaction       Transaction @relation(fields: [transaction_id], references: [id])
+}
+
+model User {
+  id            String   @id
+  email         String   @unique
+  username      String   @unique
+  password      String
+  refresh_token String?  @db.LongText
+  Profile       Profile?
 }

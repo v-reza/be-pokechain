@@ -10,7 +10,7 @@ const register = async (req, res) => {
   try {
     const haveUser = await User.findFirst({
       where: {
-        NOT:{username:'gamemaster'},
+        NOT: { username: "gamemaster" },
         OR: [{ email: email }, { username: username }],
       },
     });
@@ -105,7 +105,6 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   const { refresh_token } = req.body;
-  console.log(req.body)
   if (!refresh_token) return res.sendStatus(401);
 
   try {
@@ -135,16 +134,22 @@ const refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.query;
     if (!refreshToken) return res.sendStatus(401);
-
+    let userId;
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) =>
+      userId = decoded.userId
+    );
+    
     const user = await User.findFirst({
       where: {
-        refresh_token: refreshToken,
+        id: userId,
       },
       include: {
         profile: true,
       },
     });
+
     if (!user) return res.sendStatus(403);
+    
     jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET,
