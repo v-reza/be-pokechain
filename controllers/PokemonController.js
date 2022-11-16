@@ -3,7 +3,7 @@ const { Pokemon, User, MarketPokemon } = require("../models");
 const getAllPokemons = async (req, res) => {
   try {
     const { page } = req.query;
-    const allMarketPokemon = await MarketPokemon.findMany()
+    const allMarketPokemon = await MarketPokemon.findMany();
     const marketPokemon = await MarketPokemon.findMany({
       skip: page ? (page - 1) * 12 : 0,
       take: page ? 12 : 100,
@@ -49,6 +49,24 @@ const getAllPokemons = async (req, res) => {
   }
 };
 
+const getPokemonByName = async (req, res) => {
+  try {
+    const pokemonWithEvolution = await Pokemon.findFirst({
+      where: {
+        name: req.params.name,
+      },
+      include: {
+        pokemon_evolutions: true,
+      },
+    });
+
+    return res.status(200).json({ results: pokemonWithEvolution });
+  } catch (error) {
+    return res.status(500).json({ err: error.message });
+  }
+};
+
 module.exports = {
   getAllPokemons,
+  getPokemonByName,
 };

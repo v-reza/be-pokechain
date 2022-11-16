@@ -21,7 +21,8 @@ model Profile {
   increment_id         Int             @unique @default(autoincrement())
   full_name            String?
   picture              String?
-  balance              Int?
+  balance              Float?
+  token                Decimal?
   tier                 Int             @default(1)
   point                Int             @default(0)
   created_at           DateTime        @default(now())
@@ -35,20 +36,36 @@ model Profile {
   buyer_market_token   MarketToken[]
   my_items             MyItems[]
   my_pokemons          MyPokemon[]
-  transactions         Transaction[]
   sales                Sales[]
+  transactions         Transaction[]
+  activity_token       ActivityToken[]
+}
+
+model ActivityToken {
+  id                 String   @id @default(uuid())
+  activity_id        String   @unique
+  status             String
+  old_volume_balance Float
+  old_volume_token   Float
+  new_volume_balance Float
+  new_volume_token   Float
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  profile_id         String
+  profile            Profile  @relation(fields: [profile_id], references: [id])
 }
 
 model Sales {
-  id             String      @id @default(uuid())
-  profile_id     String
-  marketplace_id String
-  sales          Int
-  status         Int         @default(0)
-  created_at     DateTime?   @default(now())
-  updated_at     DateTime?   @updatedAt
-  marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
-  profile        Profile?    @relation(fields: [profile_id], references: [id])
+  id         String    @id @default(uuid())
+  profile_id String
+  type       String
+  sales      Int
+  status     Int       @default(0)
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+  profile    Profile   @relation(fields: [profile_id], references: [id])
+
+  @@index([profile_id], map: "Sales_profile_id_fkey")
 }
 
 model MyPokemon {
@@ -133,7 +150,6 @@ model MarketPlace {
   market_items   MarketItems[]
   market_pokemon MarketPokemon[]
   market_token   MarketToken[]
-  Sales          Sales[]
 
   @@index([seller_id], map: "MarketTopSales_seller_id_fkey")
 }
@@ -151,7 +167,7 @@ model MarketPokemon {
   front_default     String
   front_default_gif String
   back_default_gif  String
-  status            String
+  status            Int?        @default(1) @db.TinyInt
   increment_id      Int?        @unique
   health            Int
   created_at        DateTime?   @default(now())
@@ -173,6 +189,8 @@ model MarketItems {
   created_at     DateTime?   @default(now())
   updated_at     DateTime?   @updatedAt
   increment_id   Int?        @unique
+  quantity       Int?        @default(1)
+  type           String?     @db.VarChar(100)
   buyer          Profile?    @relation(fields: [buyer_id], references: [id])
   marketplace    MarketPlace @relation(fields: [marketplace_id], references: [id])
 
@@ -254,24 +272,22 @@ model TransactionDetailPokemon {
 }
 
 model MyItems {
-  id           String   @id @default(uuid())
-  profile_id   String
-  name         String
-  quantity     Int
-  created_at   DateTime @default(now())
-  updated_at   DateTime
-  detail_items Items    @relation(fields: [name], references: [name])
-  user         Profile  @relation(fields: [profile_id], references: [id])
+  id         String   @id @default(uuid())
+  profile_id String
+  name       String
+  quantity   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       Profile  @relation(fields: [profile_id], references: [id])
 
   @@index([profile_id], map: "MyItems_profile_id_fkey")
   @@index([name], map: "MyItems_name_fkey")
 }
 
 model Items {
-  id      Int       @id @default(autoincrement())
-  name    String    @unique
-  img     String
-  MyItems MyItems[]
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  img  String
 }
 
 model ListItems {

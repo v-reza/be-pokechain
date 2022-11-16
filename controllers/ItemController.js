@@ -2,7 +2,7 @@ const { Pokemon, User, MarketItems } = require("../models");
 
 const getAllItems = async (req, res) => {
   try {
-    const { page } = req.query;
+    const { page, filters, sort } = req.query;
     const allMarketItems = await MarketItems.findMany();
     const marketItems = await MarketItems.findMany({
       skip: page ? (page - 1) * 12 : 0,
@@ -50,6 +50,34 @@ const getAllItems = async (req, res) => {
   }
 };
 
+const getItemByIncrementId = async (req, res) => {
+  try {
+    const items = await MarketItems.findUnique({
+      where: {
+        increment_id: parseInt(req.params.id)
+      },
+      include: {
+        marketplace: {
+          include: {
+            seller: {
+              include: {
+                user: true
+              }
+            }
+          }
+        }
+      }
+    })
+    delete items.marketplace.seller.user.password;
+    delete items.marketplace.seller.user.refresh_token;
+
+    return res.status(200).json({results : items});
+  } catch (error) {
+    return res.status(500).json({ err: error.message });
+  }
+}
+
 module.exports = {
   getAllItems,
+  getItemByIncrementId
 };
