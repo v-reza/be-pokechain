@@ -160,7 +160,7 @@ const convertBalanceToToken = async (req, res) => {
       },
       data: {
         balance: {
-          decrement: parseInt(balance),
+          decrement: parseFloat(balance),
         },
         token: {
           increment: parseFloat(balance * rateToken),
@@ -260,7 +260,7 @@ const convertTokenToBalance = async (req, res) => {
         },
         token: {
           decrement: parseFloat(token),
-        }
+        },
       },
       include: {
         user: {
@@ -354,6 +354,115 @@ const getActivityToken = async (req, res) => {
   }
 };
 
+const sellBackpackToken = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { token, rateToken } = req.body;
+    const profile = await Profile.findUnique({
+      where: {
+        user_id: userId,
+      },
+    });
+    const marketplace = await MarketPlace.upsert({
+      where: {
+        seller_id: profile.id,
+      },
+      create: {
+        seller_id: profile.id,
+        market_token: {
+          create: {
+            token: parseFloat(token),
+            price: parseFloat(token / rateToken),
+            increment_id: Math.floor(Math.random() * 100000),
+          },
+        },
+      },
+      update: {
+        market_token: {
+          create: {
+            token: parseFloat(token),
+            price: parseFloat(token / rateToken),
+            increment_id: Math.floor(Math.random() * 100000),
+          },
+        },
+      },
+    });
+    if (!marketplace) return res.status(401).send("Unauthorized");
+    
+    const updateProfile = await Profile.update({
+      where: {
+        user_id: userId,
+      },
+      data: {
+        token: {
+          decrement: parseFloat(token),
+        },
+      },
+      include: {
+        user: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+    });
+    const refreshToken = jwt.sign(
+      {
+        userId: updateProfile.user.id,
+        username: updateProfile.user.username,
+        email: updateProfile.user.email,
+        profile: updateProfile.user.profile,
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+    const activityUser = await User.update({
+      where: {
+        id: updateProfile.user.id,
+      },
+      data: {
+        refresh_token: refreshToken,
+        profile: {
+          update: {
+            activity_token: {
+              create: {
+                activity_id: `0x${Math.floor(Math.random() * 100000)}`,
+                new_volume_balance: parseFloat(updateProfile.balance),
+                new_volume_token: parseFloat(updateProfile.token),
+                old_volume_balance: parseFloat(profile.balance),
+                old_volume_token: parseFloat(profile.token),
+                status: "sell",
+              },
+            },
+          },
+        },
+      },
+    });
+    const userUpdated = await User.findUnique({
+      where: {
+        id: activityUser.id,
+      },
+      include: {
+        profile: true,
+      },
+    });
+    const accessToken = jwt.sign(
+      {
+        userId: userUpdated.id,
+        email: userUpdated.email,
+        username: userUpdated.username,
+        refresh_token: userUpdated.refresh_token,
+        profile: userUpdated.profile,
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "20s" }
+    );
+    return res.status(200).json({ msg: "Sell success", accessToken });
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
+
 module.exports = {
   getBackpackPokemon,
   getBackpackItems,
@@ -362,4 +471,5 @@ module.exports = {
   convertBalanceToToken,
   convertTokenToBalance,
   getActivityToken,
+  sellBackpackToken,
 };

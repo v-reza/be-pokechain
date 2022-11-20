@@ -229,7 +229,7 @@ model MarketBundlesItems {
 model MarketToken {
   id             String      @id @default(uuid())
   marketplace_id String
-  price          Int
+  price          Decimal
   token          Decimal
   buyer_id       String?
   created_at     DateTime?   @default(now())
@@ -248,10 +248,11 @@ model Transaction {
   status         String
   price          Int
   order_id       String
-  created_at     DateTime                  @default(now())
-  updated_at     DateTime
+  created_at     DateTime?                 @default(now())
+  updated_at     DateTime?                 @updatedAt
   user           Profile                   @relation(fields: [profile_id], references: [id])
   detail_pokemon TransactionDetailPokemon?
+  detail_item    TransactionDetailItem?
 
   @@index([profile_id], map: "Transaction_profile_id_fkey")
 }
@@ -269,6 +270,14 @@ model TransactionDetailPokemon {
   front_default_gif   String
   back_default_gif    String
   transaction_pokemon Transaction @relation(fields: [transaction_id], references: [id])
+}
+
+model TransactionDetailItem {
+  id               String      @id @default(uuid())
+  transaction_id   String      @unique
+  name             String
+  rarity           String
+  transaction_item Transaction @relation(fields: [transaction_id], references: [id])
 }
 
 model MyItems {
