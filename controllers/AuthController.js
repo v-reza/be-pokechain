@@ -135,10 +135,15 @@ const refreshToken = async (req, res) => {
     const { refreshToken } = req.query;
     if (!refreshToken) return res.sendStatus(401);
     let userId;
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) =>
-      userId = decoded.userId
+    jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+      (err, decoded) => {
+        if (err) return res.sendStatus(401);
+        userId = decoded.userId;
+      }
     );
-    
+
     const user = await User.findFirst({
       where: {
         id: userId,
@@ -147,9 +152,8 @@ const refreshToken = async (req, res) => {
         profile: true,
       },
     });
-
     if (!user) return res.sendStatus(403);
-    
+
     jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET,

@@ -18,10 +18,12 @@ const {
   marketBundlesItems: MarketBundlesItems,
   marketToken: MarketToken,
   transaction: Transaction,
+  transactionDetailItem: TransactionDetailItem,
   transactionDetailPokemon: TransactionDetailPokemon,
   items: Items,
   listItems: ListItems,
   activityToken: ActivityToken,
+  saleHistoryItems: SaleHistoryItems
 } = prisma;
 
 module.exports = {
@@ -41,8 +43,11 @@ module.exports = {
   MarketBundlesItems,
   MarketToken,
   Transaction,
+  TransactionDetailItem,
   TransactionDetailPokemon,
   Items,
   ListItems,
   ActivityToken,
+  SaleHistoryItems,
+  prisma
 };

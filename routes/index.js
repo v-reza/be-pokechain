@@ -9,6 +9,7 @@ const bundleRouter = require("./subroutes/bundle");
 const tokenRouter = require("./subroutes/token");
 const marketplaceRouter = require("./subroutes/marketplace");
 const backpackRouter = require("./subroutes/backpack");
+const transactionRouter = require("./subroutes/transaction");
 
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
@@ -18,5 +19,6 @@ app.use("/item", itemRouter)
 app.use("/bundle", bundleRouter)
 app.use("/token",tokenRouter)
 app.use("/backpack", backpackRouter);
+app.use("/transaction", transactionRouter);
 
 module.exports = app;

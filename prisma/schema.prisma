@@ -132,7 +132,7 @@ model MarketPokemon {
 model MarketToken {
   id             String      @id
   marketplace_id String
-  price          Int
+  price          Decimal
   token          Decimal
   buyer_id       String?
   created_at     DateTime?   @default(now())
@@ -261,6 +261,7 @@ model Sales {
 }
 
 model Transaction {
+<<<<<<< HEAD
   id                       String                    @id
   profile_id               String
   status                   String
@@ -270,6 +271,18 @@ model Transaction {
   updated_at               DateTime
   Profile                  Profile                   @relation(fields: [profile_id], references: [id])
   TransactionDetailPokemon TransactionDetailPokemon?
+=======
+  id             String                    @id @default(uuid())
+  profile_id     String
+  status         String
+  price          Int
+  order_id       String
+  created_at     DateTime?                 @default(now())
+  updated_at     DateTime?                 @updatedAt
+  user           Profile                   @relation(fields: [profile_id], references: [id])
+  detail_pokemon TransactionDetailPokemon?
+  detail_item    TransactionDetailItem?
+>>>>>>> a0d4de467b74ccbd54e935529cf75a977f725f8d
 
   @@index([profile_id], map: "Transaction_profile_id_fkey")
 }
@@ -289,6 +302,7 @@ model TransactionDetailPokemon {
   Transaction       Transaction @relation(fields: [transaction_id], references: [id])
 }
 
+<<<<<<< HEAD
 model User {
   id            String   @id
   email         String   @unique
@@ -296,4 +310,37 @@ model User {
   password      String
   refresh_token String?  @db.LongText
   Profile       Profile?
+=======
+model TransactionDetailItem {
+  id               String      @id @default(uuid())
+  transaction_id   String      @unique
+  name             String
+  rarity           String
+  transaction_item Transaction @relation(fields: [transaction_id], references: [id])
+}
+
+model MyItems {
+  id         String   @id @default(uuid())
+  profile_id String
+  name       String
+  quantity   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       Profile  @relation(fields: [profile_id], references: [id])
+
+  @@index([profile_id], map: "MyItems_profile_id_fkey")
+  @@index([name], map: "MyItems_name_fkey")
+}
+
+model Items {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  img  String
+}
+
+model ListItems {
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  rarity String
+>>>>>>> a0d4de467b74ccbd54e935529cf75a977f725f8d
 }
