@@ -11,16 +11,19 @@ const {
   pokemonEvolution: PokemonEvolution,
   arena: Arena,
   marketPlace: MarketPlace,
-  sales:Sales,
+  sales: Sales,
   marketPokemon: MarketPokemon,
   marketItems: MarketItems,
   marketBundles: MarketBundles,
   marketBundlesItems: MarketBundlesItems,
   marketToken: MarketToken,
   transaction: Transaction,
+  transactionDetailItem: TransactionDetailItem,
   transactionDetailPokemon: TransactionDetailPokemon,
   items: Items,
-  listItems: ListItems
+  listItems: ListItems,
+  activityToken: ActivityToken,
+  saleHistoryItems: SaleHistoryItems
 } = prisma;
 
 module.exports = {
@@ -40,7 +43,11 @@ module.exports = {
   MarketBundlesItems,
   MarketToken,
   Transaction,
+  TransactionDetailItem,
   TransactionDetailPokemon,
   Items,
-  ListItems
+  ListItems,
+  ActivityToken,
+  SaleHistoryItems,
+  prisma
 };

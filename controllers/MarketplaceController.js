@@ -138,6 +138,47 @@ const recentSales = async (req, res) => {
 
 const dataDummy = async (req, res) => {
   try {
+    // const items = await MarketItems.findMany()
+
+    // const itemName = []
+    // const itemQty = []
+    // const listItem = []
+
+    // // map items and filter not duplicate name
+    // items.map((item) => {
+    //   if (!itemName.includes(item.name)) {
+    //     itemName.push(item.name)
+    //     itemQty.push(items.filter((i) => i.name === item.name).length)
+    //   }
+    // })
+
+    // itemName.map((name, index) => {
+    //   listItem.push({
+    //     name,
+    //     qty: itemQty[index]
+    //   })
+    // })
+
+    // listItem.map(async (item) => {
+    //   await User.update({
+    //     where: {
+    //       username: "wildan"
+    //     },
+    //     data: {
+    //       profile: {
+    //         update: {
+    //           my_items: {
+    //             create: {
+    //               quantity: item.qty,
+    //               name: item.name,
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   })
+    // })
+
     // const item = [
     //   {
     //     types: ["awakening", "full-heal", "master-ball", "max-revive"],
@@ -165,33 +206,33 @@ const dataDummy = async (req, res) => {
     //     types: ["master-ball", "medium-ball", "ultra-ball"],
     //   },
     // ];
-    const user = await User.findFirst({
-      where: {
-        username: "gamemaster",
-      },
-      include: {
-        profile: true,
-      },
-    });
-    const profileId = user.profile.id;
-    const rateUSDToken = 0.028888;
-    new Array(20).fill(0).map(async (_) => {
-      const priceRandom = Math.floor(Math.random() * 1000);
-      const marketplace = await MarketPlace.update({
-        where: {
-          seller_id: profileId,
-        },
-        data: {
-          market_token: {
-            create: {
-              price: priceRandom,
-              token: parseFloat((priceRandom * rateUSDToken).toFixed(3)),
-              increment_id: Math.floor(Math.random() * 100000),
-            },
-          },
-        },
-      });
-    });
+    // const user = await User.findFirst({
+    //   where: {
+    //     username: "gamemaster",
+    //   },
+    //   include: {
+    //     profile: true,
+    //   },
+    // });
+    // const profileId = user.profile.id;
+    // const rateUSDToken = 0.028888;
+    // new Array(20).fill(0).map(async (_) => {
+    //   const priceRandom = Math.floor(Math.random() * 1000);
+    //   const marketplace = await MarketPlace.update({
+    //     where: {
+    //       seller_id: profileId,
+    //     },
+    //     data: {
+    //       market_token: {
+    //         create: {
+    //           price: priceRandom,
+    //           token: parseFloat((priceRandom * rateUSDToken).toFixed(3)),
+    //           increment_id: Math.floor(Math.random() * 100000),
+    //         },
+    //       },
+    //     },
+    //   });
+    // });
     // item.map(async (item) => {
     //   const marketplace = await MarketPlace.update({
     //     where: {
@@ -267,7 +308,7 @@ const dataDummy = async (req, res) => {
     //     }
     //   })
     // })
-    return res.status(200).json({ msg: "success" });
+    return res.status(200).json({ msg: "success", listItem });
   } catch (error) {
     return res.status(500).json({ err: error.message });
   }
@@ -476,13 +517,12 @@ const recentListings = async (req, res) => {
   }
 };
 
-const topSales = async (req,res) =>{
-
-}
+const topSales = async (req, res) => {};
 
 module.exports = {
   recentSales,
   overallStats,
   recentListings,
   topSales,
+  dataDummy,
 };

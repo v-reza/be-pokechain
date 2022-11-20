@@ -13,6 +13,6 @@ router.post("/login", login);
 router.get("/token", refreshToken);
 router.delete("/logout", logout);
 
-router.get("/users",verifyToken,users)
+router.get("/users", verifyToken, users);
 
 module.exports = router;

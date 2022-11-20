@@ -1,10 +1,8 @@
-const {
-    getAllItems,
-  } = require("../../controllers/ItemController");
-  
-  const router = require("express").Router();
-  
-  router.get("/", getAllItems);
-  
-  module.exports = router;
-  
+const { getAllItems, getItemByIncrementId } = require("../../controllers/ItemController");
+
+const router = require("express").Router();
+
+router.get("/", getAllItems);
+router.get("/:id", getItemByIncrementId)
+
+module.exports = router;
