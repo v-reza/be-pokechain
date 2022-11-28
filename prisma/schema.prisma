@@ -29,6 +29,7 @@ model Profile {
   updated_at           DateTime        @updatedAt
   user_id              String          @unique
   user                 User            @relation(fields: [user_id], references: [id])
+  activity_token       ActivityToken[]
   buyer_market_bundles MarketBundles[]
   buyer_market_items   MarketItems[]
   market_place         MarketPlace?
@@ -38,7 +39,6 @@ model Profile {
   my_pokemons          MyPokemon[]
   sales                Sales[]
   transactions         Transaction[]
-  activity_token       ActivityToken[]
 }
 
 model ActivityToken {
@@ -53,6 +53,8 @@ model ActivityToken {
   updated_at         DateTime @updatedAt
   profile_id         String
   profile            Profile  @relation(fields: [profile_id], references: [id])
+
+  @@index([profile_id], map: "ActivityToken_profile_id_fkey")
 }
 
 model Sales {
@@ -201,8 +203,8 @@ model MarketItems {
 model MarketBundles {
   id             String               @id @default(uuid())
   marketplace_id String
-  price          Int
   buyer_id       String?
+    price           Int?
   created_at     DateTime?            @default(now())
   increment_id   Int?                 @unique
   updated_at     DateTime?            @updatedAt
@@ -221,6 +223,8 @@ model MarketBundlesItems {
   created_at      DateTime?     @default(now())
   rarity          String
   updated_at      DateTime?     @updatedAt
+  price           Int?
+  quantity        Int?          @default(1)
   marketbundles   MarketBundles @relation(fields: [marketbundle_id], references: [id])
 
   @@index([marketbundle_id], map: "MarketBundlesItems_marketbundle_id_fkey")
@@ -251,8 +255,8 @@ model Transaction {
   created_at     DateTime?                 @default(now())
   updated_at     DateTime?                 @updatedAt
   user           Profile                   @relation(fields: [profile_id], references: [id])
-  detail_pokemon TransactionDetailPokemon?
   detail_item    TransactionDetailItem?
+  detail_pokemon TransactionDetailPokemon?
 
   @@index([profile_id], map: "Transaction_profile_id_fkey")
 }
