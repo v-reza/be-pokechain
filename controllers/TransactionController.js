@@ -408,13 +408,13 @@ const getNotificationMidtrans = async (req, res) => {
             await TransactionDetailItem.delete({
               where: {
                 transaction_id: transaction.id,
-              }
-            })
+              },
+            });
             await Transaction.delete({
               where: {
                 id: transaction.id,
-              }
-            })
+              },
+            });
             await MarketItems.update({
               where: {
                 increment_id: parseInt(increment_id),

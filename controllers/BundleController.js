@@ -1,8 +1,47 @@
 const { Pokemon, User, MarketBundles } = require("../models");
 
 const getAllBundles = async (req, res) => {
+  const {filterSelected,filterItem,filterRarity,page} = req.query
+  const sortQuery = () => {
+    if (filterSelected === "lowest_price") {
+      return {
+        orderBy: {
+          price: "asc",
+        },
+      };
+    } else if (filterSelected === "highest_price") {
+      return {
+        orderBy: {
+          price: "desc",
+        },
+      };
+    } else if (filterSelected === "lowest_id") {
+      return {
+        orderBy: {
+          increment_id: "asc",
+        },
+      };
+    } else if (filterSelected === "highest_id") {
+      return {
+        orderBy: {
+          increment_id: "desc",
+        },
+      };
+    } else if (filterSelected === "latest") {
+      return {
+        orderBy: {
+          created_at: "desc",
+        },
+      };
+    } else {
+      return {
+        orderBy: {
+          price: "asc",
+        },
+      };
+    }
+  };
   try {
-    const { page } = req.query;
     const allMarketBundles = await MarketBundles.findMany();
     const marketBundles = await MarketBundles.findMany({
       skip: page ? (page - 1) * 12 : 0,
@@ -24,6 +63,7 @@ const getAllBundles = async (req, res) => {
         },
         bundles_items:true
       },
+      ...sortQuery(),
     });
     marketBundles.map((item) => {
       delete item.buyer?.user.password;
@@ -41,7 +81,9 @@ const getAllBundles = async (req, res) => {
     return res.status(200).json({
       hasPrevious: page > 1,
       hasNext:
-        Math.ceil(allMarketBundles.length / 12) === parseInt(page) ? false : true,
+        Math.ceil(allMarketBundles.length / 12) === parseInt(page)
+          ? false
+          : true,
       total: allMarketBundles.length,
       totalPages: Math.ceil(allMarketBundles.length / 12),
       results: marketBundles,

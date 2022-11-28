@@ -115,6 +115,117 @@ const sellBackpackItems = async (req, res) => {
   }
 };
 
+const sellBackpackPokemon = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { id, price } = req.body;
+    const profile = await Profile.findUnique({
+      where: {
+        user_id: userId,
+      },
+      include: {
+        my_pokemons: {
+          where: {
+            detail_pokemon: {
+              id,
+            },
+          },
+          include: {
+            detail_pokemon: true,
+          },
+        },
+      },
+    });
+    console.log(profile);
+
+    if (!profile) return res.status(401).send("Unauthorized");
+
+    const findMyPokemonOnMarketplace = await MarketPlace.findFirst({
+      where: {
+        seller_id: profile.id,
+        market_pokemon: {
+          some: {
+            name: profile.my_pokemons[0].detail_pokemon.name,
+            status: 1
+          }
+        }
+      },
+    });
+
+    if (findMyPokemonOnMarketplace)
+      return res.status(400).json({ msg: "Your pokemon already for sell" });
+
+    const marketplace = await MarketPlace.upsert({
+      where: {
+        seller_id: profile.id,
+      },
+      create: {
+        seller_id: profile.id,
+        market_pokemon: {
+          create: {
+            price,
+            attack: profile.my_pokemons[0].detail_pokemon.attack,
+            defense: profile.my_pokemons[0].detail_pokemon.defense,
+            element: profile.my_pokemons[0].detail_pokemon.element,
+            front_default: profile.my_pokemons[0].detail_pokemon.front_default,
+            front_default_gif:
+              profile.my_pokemons[0].detail_pokemon.front_default_gif,
+            health: profile.my_pokemons[0].detail_pokemon.health,
+            level: profile.my_pokemons[0].detail_pokemon.level,
+            name: profile.my_pokemons[0].detail_pokemon.name,
+            increment_id: Math.floor(Math.random() * 100000),
+            status: 1,
+            back_default_gif:
+              profile.my_pokemons[0].detail_pokemon.back_default_gif,
+          },
+        },
+      },
+      update: {
+        market_pokemon: {
+          create: {
+            price,
+            attack: profile.my_pokemons[0].detail_pokemon.attack,
+            defense: profile.my_pokemons[0].detail_pokemon.defense,
+            element: profile.my_pokemons[0].detail_pokemon.element,
+            front_default: profile.my_pokemons[0].detail_pokemon.front_default,
+            front_default_gif:
+              profile.my_pokemons[0].detail_pokemon.front_default_gif,
+            health: profile.my_pokemons[0].detail_pokemon.health,
+            level: profile.my_pokemons[0].detail_pokemon.level,
+            name: profile.my_pokemons[0].detail_pokemon.name,
+            increment_id: Math.floor(Math.random() * 100000),
+            status: 1,
+            back_default_gif:
+              profile.my_pokemons[0].detail_pokemon.back_default_gif,
+          },
+        },
+      },
+    });
+    if (marketplace) {
+      await Profile.update({
+        where: {
+          user_id: userId,
+        },
+        data: {
+          my_pokemons: {
+            update: {
+              where: {
+                id: profile.my_pokemons[0].id,
+              },
+              data: {
+                is_sell: true,
+              },
+            },
+          },
+        },
+      });
+    }
+    return res.status(200).json({ msg: "Your pokemon success for sell" });
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
+
 const verifyPassword = async (req, res) => {
   try {
     const { userId } = req.user;
@@ -388,7 +499,7 @@ const sellBackpackToken = async (req, res) => {
       },
     });
     if (!marketplace) return res.status(401).send("Unauthorized");
-    
+
     const updateProfile = await Profile.update({
       where: {
         user_id: userId,
@@ -467,6 +578,7 @@ module.exports = {
   getBackpackPokemon,
   getBackpackItems,
   sellBackpackItems,
+  sellBackpackPokemon,
   verifyPassword,
   convertBalanceToToken,
   convertTokenToBalance,
