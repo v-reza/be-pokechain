@@ -12,7 +12,7 @@ const getBackpackPokemon = async (req, res) => {
       include: {
         my_pokemons: {
           where: {
-            is_sell: false,
+            is_sell: true,
           },
           include: {
             detail_pokemon: true,
