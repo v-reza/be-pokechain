@@ -17,18 +17,19 @@ model User {
 }
 
 model Profile {
-  id                   String          @id @default(uuid())
-  increment_id         Int             @unique @default(autoincrement())
+  id                   String              @id @default(uuid())
+  increment_id         Int                 @unique @default(autoincrement())
   full_name            String?
   picture              String?
   balance              Float?
   token                Decimal?
-  tier                 Int             @default(1)
-  point                Int             @default(0)
-  created_at           DateTime        @default(now())
-  updated_at           DateTime        @updatedAt
-  user_id              String          @unique
-  user                 User            @relation(fields: [user_id], references: [id])
+  level                Int?                @default(1)
+  tier                 Int                 @default(1)
+  point                Int                 @default(0)
+  created_at           DateTime            @default(now())
+  updated_at           DateTime            @updatedAt
+  user_id              String              @unique
+  user                 User                @relation(fields: [user_id], references: [id])
   activity_token       ActivityToken[]
   buyer_market_bundles MarketBundles[]
   buyer_market_items   MarketItems[]
@@ -39,6 +40,34 @@ model Profile {
   my_pokemons          MyPokemon[]
   sales                Sales[]
   transactions         Transaction[]
+  my_arena_is_complete MyArenaIsComplete[]
+}
+
+model MyArenaIsComplete {
+  id                 String    @id @default(uuid())
+  created_at         DateTime? @default(now())
+  updated_at         DateTime? @updatedAt
+  profile_id         String?
+  arena_challenge_id String?
+  is_claimed         Boolean?  @default(false)
+  Profile            Profile?  @relation(fields: [profile_id], references: [id])
+}
+
+model Arena {
+  id              String           @id @default(uuid())
+  tier            Int
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  arena_challenge ArenaChallenge[]
+}
+
+model ArenaChallenge {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  challenge  String?
+  arena_id   String
+  Arena      Arena?   @relation(fields: [arena_id], references: [id])
 }
 
 model ActivityToken {
@@ -134,14 +163,6 @@ model PokemonEvolution {
   @@index([pokemon_id], map: "PokemonEvolution_pokemon_id_fkey")
 }
 
-model Arena {
-  id         String   @id @default(uuid())
-  name       String
-  point      Int
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-}
-
 model MarketPlace {
   id             String          @id @default(uuid())
   seller_id      String          @unique
@@ -204,7 +225,7 @@ model MarketBundles {
   id             String               @id @default(uuid())
   marketplace_id String
   buyer_id       String?
-    price           Int?
+  price          Int?
   created_at     DateTime?            @default(now())
   increment_id   Int?                 @unique
   updated_at     DateTime?            @updatedAt
