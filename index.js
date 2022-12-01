@@ -10,7 +10,7 @@ const { allowedOrigins } = require("./config/rootConfig");
 
 /* Application Use */
 dotenv.config();
-app.use(cors({ credentials: true, origin: allowedOrigins }));
+app.use(cors({ credentials: true, origin: "*" }));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));

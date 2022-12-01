@@ -23,7 +23,10 @@ const {
   items: Items,
   listItems: ListItems,
   activityToken: ActivityToken,
-  saleHistoryItems: SaleHistoryItems
+  saleHistoryItems: SaleHistoryItems,
+  myArenaIsComplete: MyArenaIsComplete,
+  arenaChallenge: ArenaChallenge,
+
 } = prisma;
 
 module.exports = {
@@ -49,5 +52,7 @@ module.exports = {
   ListItems,
   ActivityToken,
   SaleHistoryItems,
+  MyArenaIsComplete,
+  ArenaChallenge,
   prisma
 };

@@ -1,4 +1,10 @@
-const { Pokemon, User, MarketItems } = require("../models");
+const {
+  Pokemon,
+  User,
+  MarketItems,
+  MarketBundlesItems,
+  MyItems,
+} = require("../models");
 
 const getAllItems = async (req, res) => {
   try {
@@ -139,19 +145,19 @@ const getItemByIncrementId = async (req, res) => {
         },
         buyer: {
           include: {
-            user: true
-          }
-        }
+            user: true,
+          },
+        },
       },
     });
     delete items.marketplace.seller.user.password;
     delete items.marketplace.seller.user.refresh_token;
-    delete items.buyer?.user.password
-    delete items.buyer?.user.refresh_token
-    delete items.buyer?.balance
-    delete items.buyer?.point
-    delete items.buyer?.tier
-    delete items.buyer?.token
+    delete items.buyer?.user.password;
+    delete items.buyer?.user.refresh_token;
+    delete items.buyer?.balance;
+    delete items.buyer?.point;
+    delete items.buyer?.tier;
+    delete items.buyer?.token;
 
     return res.status(200).json({ results: items });
   } catch (error) {
@@ -159,7 +165,21 @@ const getItemByIncrementId = async (req, res) => {
   }
 };
 
+const insertMyItems = async (req, res) => {
+  const item = await MarketBundlesItems.findMany({});
+  item.map(async (data) => {
+    await MyItems.create({
+      data: {
+        profile_id: "1dbc53ed-d32e-454b-99ea-71a158aae73d",
+        name: data.item_name,
+        quantity: 1,
+      },
+    });
+  });
+};
+
 module.exports = {
   getAllItems,
   getItemByIncrementId,
+  insertMyItems,
 };
