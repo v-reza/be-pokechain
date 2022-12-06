@@ -1,4 +1,10 @@
-const { Profile, MarketPlace, User, ActivityToken } = require("../models");
+const {
+  Profile,
+  MarketPlace,
+  User,
+  ActivityToken,
+  MyItems,
+} = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -146,9 +152,9 @@ const sellBackpackPokemon = async (req, res) => {
         market_pokemon: {
           some: {
             name: profile.my_pokemons[0].detail_pokemon.name,
-            status: 1
-          }
-        }
+            status: 1,
+          },
+        },
       },
     });
 
@@ -574,6 +580,88 @@ const sellBackpackToken = async (req, res) => {
   }
 };
 
+const getBackpackFragment = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const profile = await Profile.findUnique({
+      where: {
+        user_id: userId,
+      },
+    });
+    if (!profile) return res.status(401).send("Unauthorized");
+
+    const profileItems = await MyItems.findMany({
+      where: {
+        profile_id: profile.id,
+        name: {
+          in: ["fragment-1", "fragment-2", "fragment-3", "fragment-4"],
+        },
+      },
+    });
+
+    return res.status(200).json(profileItems);
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
+
+const claimRewardCombine = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { fragments, reward } = req.body;
+    const profile = await Profile.findUnique({
+      where: {
+        user_id: userId,
+      },
+    });
+    if (!profile) return res.status(401).send("Unauthorized");
+    fragments.map(async (f) => {
+      await MyItems.update({
+        where: {
+          id: f.id,
+        },
+        data: {
+          quantity: {
+            decrement: 1,
+          }
+        }
+      })
+    })
+    reward.map(async (r) => {
+      const myItems = await MyItems.findFirst({
+        where: {
+          name: r.name,
+          profile_id: profile.id,
+        }
+      })
+
+      if (myItems) {
+        await MyItems.update({
+          where: {
+            id: myItems.id,
+          },
+          data: {
+            quantity: {
+              increment: 1,
+            }
+          }
+        })
+      } else {
+        await MyItems.create({
+          data: {
+            name: r.name,
+            profile_id: profile.id,
+            quantity: 1,
+          }
+        })
+      }
+    })
+    return res.status(200).json({ msg: "Claim success" });
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
+
 module.exports = {
   getBackpackPokemon,
   getBackpackItems,
@@ -584,4 +672,6 @@ module.exports = {
   convertTokenToBalance,
   getActivityToken,
   sellBackpackToken,
+  getBackpackFragment,
+  claimRewardCombine
 };
