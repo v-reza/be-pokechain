@@ -22,7 +22,7 @@ model Profile {
   full_name            String?
   picture              String?
   balance              Float?
-  token                Decimal?
+  token                Decimal?            @default(0)
   level                Int?                @default(1)
   tier                 Int                 @default(1)
   point                Int                 @default(0)
