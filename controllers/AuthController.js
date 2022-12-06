@@ -94,7 +94,7 @@ const login = async (req, res) => {
       },
       process.env.ACCESS_TOKEN_SECRET,
       {
-        expiresIn: "10m",
+        expiresIn: "1h",
       }
     );
     res.json({ accessToken, msg: "Login Successfuls" });
@@ -164,7 +164,7 @@ const refreshToken = async (req, res) => {
           { userId, username, email, profile, refresh_token },
           process.env.ACCESS_TOKEN_SECRET,
           {
-            expiresIn: "10m",
+            expiresIn: "1h",
           }
         );
         res.json({ accessToken });
